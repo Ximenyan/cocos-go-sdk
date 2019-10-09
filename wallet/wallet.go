@@ -30,11 +30,26 @@ func CreateWallet() *Wallet {
 	return w
 }
 
+func (w *Wallet) initWallet() (err error) {
+	w.Lock()
+	defer w.Unlock()
+	msh, err := ioutil.ReadFile(w.path)
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(msh, w); err != nil {
+		return err
+	}
+	return nil
+}
+
 //加载钱包
 func (w *Wallet) LoadWallet(path string) (err error) {
 	w.Lock()
-	w.Save()
 	defer w.Unlock()
+	if w.path != path {
+		w.Save()
+	}
 	msh, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -65,10 +80,11 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 		}
 	}
 	if !w.Accounts[info.Name].VerificationPassword(password) {
-
 		return errors.New("the password is error!")
 	}
-	if active_puk, success := info.Active.KeyAuths[0][0].(string); success && puk == active_puk {
+	if active_puk, success := info.Active.KeyAuths[0][0].(string); success &&
+		puk == active_puk &&
+		w.Accounts[info.Name].GetActiveKey() == nil {
 		activePair := KeyPair{
 			Type:        "active",
 			PubKey:      puk,
@@ -82,7 +98,9 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 			Private_Key: prk,
 		}
 		w.Accounts[info.Name].KeyPairs = append(w.Accounts[info.Name].KeyPairs, []KeyPair{activePair, memoPair}...)
-	} else if owner_puk, success := info.Owner.KeyAuths[0][0].(string); success && puk == owner_puk {
+	} else if owner_puk, success := info.Owner.KeyAuths[0][0].(string); success &&
+		puk == owner_puk &&
+		w.Accounts[info.Name].GetOwnerKey() == nil {
 		log.Println(info.Owner.KeyAuths[0][0].(string))
 		ownerPair := KeyPair{
 			Type:        "owner",
@@ -91,7 +109,7 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 			Private_Key: prk,
 		}
 		w.Accounts[info.Name].KeyPairs = append(w.Accounts[info.Name].KeyPairs, ownerPair)
-	} else {
+	} /*else {
 		unknowPair := KeyPair{
 			Type:        "unknow",
 			PubKey:      puk,
@@ -99,7 +117,7 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 			Private_Key: prk,
 		}
 		w.Accounts[info.Name].KeyPairs = append(w.Accounts[info.Name].KeyPairs, unknowPair)
-	}
+	}*/
 	w.Save()
 	return
 }
@@ -108,6 +126,9 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 func (w *Wallet) CreateAccount(name string, password string) (err error) {
 	w.Lock()
 	defer w.Unlock()
+	if w.Default.Info == nil {
+		w.Default.Info = rpc.GetAccountInfoByName(w.Default.Name)
+	}
 	w.Accounts[name] = CreateAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID) //append(w.Accounts, CreateAccount(name, password))
 	w.Save()
 	return
