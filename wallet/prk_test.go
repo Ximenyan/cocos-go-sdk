@@ -2,22 +2,13 @@ package wallet
 
 import (
 	"cocos-go-sdk/crypto/secp256k1"
+	"cocos-go-sdk/rpc"
 	"crypto/aes"
 	"crypto/cipher"
-	"strconv"
-
-	//	"crypto/ecdsa"
 	"crypto/sha256"
-
-	//"crypto/aes"
-	"cocos-go-sdk/rpc"
 	"crypto/sha512"
 	"encoding/hex"
-
-	//"crypto/ecdsa"
-	//"crypto/elliptic"
-
-	//"math/big"
+	"strconv"
 	"testing"
 )
 

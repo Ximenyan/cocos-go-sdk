@@ -10,6 +10,7 @@ const LOCAL = "192.168.0.166"
 
 var _ = InitClient(TEST_NET, 8049, false)
 
+/*
 func TestGetAccountsInfo(t *testing.T) {
 	res := GetIdsByPubkeys([]string{"COCOS6zfzShioGyBcvcyFB4Xfzcdo8T7vbXKzRqRG4mJH7aws9BJ88e"})
 	res2 := GetAccountsInfo(res[0])
@@ -18,6 +19,18 @@ func TestGetAccountsInfo(t *testing.T) {
 
 func TestLookByName(t *testing.T) {
 	res := GetAccountInfoByName("sept925")
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}*/
+
+func TestGetBalances(t *testing.T) {
+	res := GetAccountBalances("1.2.94622")
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestGetTokenInfo(t *testing.T) {
+	res := GetTokenInfo("1.3.28")
 	byte_s, _ := json.Marshal(res)
 	t.Log(string(byte_s))
 }

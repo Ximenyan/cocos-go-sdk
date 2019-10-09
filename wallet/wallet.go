@@ -5,7 +5,6 @@ import (
 	"cocos-go-sdk/rpc"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -137,7 +136,6 @@ func (w *Wallet) CreateAccount(name string, password string) (err error) {
 //保存钱包到文件
 func (this *Wallet) Save() error {
 	data, err := json.Marshal(this)
-	fmt.Println(this.path)
 	if err != nil {
 		return err
 	}

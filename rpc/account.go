@@ -41,6 +41,10 @@ type AccountInfo struct {
 	Registrar                 string `json:"registrar"`
 	Statistics                string `json:"statistics"`
 }
+type Balance struct {
+	Amount  interface{} `json:"amount"`
+	AssetID string      `json:"asset_id"`
+}
 
 func (info AccountInfo) GetActivePuKey() string {
 	if key, success := info.Active.KeyAuths[0][0].(string); success {
@@ -105,6 +109,77 @@ func GetAccountInfoByPublicKey(publicKey string) *AccountInfo {
 	}
 }
 
+func GetAccountBalances(id string) *[]Balance {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `get_account_balances`,
+			[]interface{}{id, []interface{}{}}})
+	if resp, err := Client.Send(req); err == nil {
+		balances := &[]Balance{}
+		if byte_s, err := json.Marshal(resp.Result); err == nil {
+			if err = json.Unmarshal(byte_s, balances); err == nil {
+				return balances
+			}
+		}
+	}
+	return nil
+}
+
+type TokenInfo struct {
+	ID        string `json:"id"`
+	Symbol    string `json:"symbol"`
+	Precision int    `json:"precision"`
+	Issuer    string `json:"issuer"`
+	Options   struct {
+		MaxSupply         interface{} `json:"max_supply"`
+		MarketFeePercent  interface{} `json:"market_fee_percent"`
+		MaxMarketFee      interface{} `json:"max_market_fee"`
+		IssuerPermissions interface{} `json:"issuer_permissions"`
+		Flags             int         `json:"flags"`
+		CoreExchangeRate  struct {
+			Base struct {
+				Amount  int    `json:"amount"`
+				AssetID string `json:"asset_id"`
+			} `json:"base"`
+			Quote struct {
+				Amount  int    `json:"amount"`
+				AssetID string `json:"asset_id"`
+			} `json:"quote"`
+		} `json:"core_exchange_rate"`
+		Description string        `json:"description"`
+		Extensions  []interface{} `json:"extensions"`
+	} `json:"options"`
+	DynamicAssetDataID string `json:"dynamic_asset_data_id"`
+}
+
+func GetTokenInfo(id string) *TokenInfo {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `get_objects`,
+			[]interface{}{[]interface{}{id}}})
+	if resp, err := Client.Send(req); err == nil {
+		tokens := &[]*TokenInfo{}
+		if byte_s, err := json.Marshal(resp.Result); err == nil {
+			if err = json.Unmarshal(byte_s, tokens); err == nil {
+				return (*tokens)[0]
+			}
+		}
+	}
+	return nil
+}
+
+func GetTokensInfo(ids []string) []*TokenInfo {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `get_objects`,
+			[]interface{}{ids}})
+	if resp, err := Client.Send(req); err == nil {
+		tokens := &[]*TokenInfo{}
+		if byte_s, err := json.Marshal(resp.Result); err == nil {
+			if err = json.Unmarshal(byte_s, tokens); err == nil {
+				return *tokens
+			}
+		}
+	}
+	return nil
+}
 func GetAccountInfoByName(name string) *AccountInfo {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `lookup_account_names`,
@@ -121,7 +196,6 @@ func GetAccountInfoByName(name string) *AccountInfo {
 }
 
 func BroadcastTransaction(tx interface{}) error {
-
 	req := CreateRpcRequest(CALL,
 		[]interface{}{4, `broadcast_transaction`,
 			[]interface{}{tx}})
