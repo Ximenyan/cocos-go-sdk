@@ -35,6 +35,8 @@ type Amount struct {
 
 func (a Amount) GetBytes() []byte {
 	byte_s := append(common.VarUint(a.Amount, 64), a.AssetID.GetBytes()...)
+	//fmt.Println("amount_data:", byte_s)
+	//fmt.Println("amount_data_len:", len(byte_s))
 	return byte_s
 }
 
@@ -134,6 +136,7 @@ func (o UpgradeAccount) GetBytes() []byte {
 	byte_s := append(fee_data,
 		append(atu_data,
 			append(utlm_data, extensions_data...)...)...)
+	//fmt.Println("op byte len:::", len(byte_s))
 	return byte_s
 }
 
@@ -156,6 +159,8 @@ func (o KeyInfo) GetBytes() []byte {
 	byte_s := append(wt_data,
 		append(aa_data,
 			append(ka_data, extensions_data...)...)...)
+	////fmt.Println("key_info_len", len(byte_s))
+	////fmt.Println("key_info:::", byte_s)
 	return byte_s
 }
 
@@ -180,6 +185,8 @@ func (o Options) GetBytes() []byte {
 			append(nw_data,
 				append(nc_data,
 					append(votes_data, extensions_data...)...)...)...)...)
+	////fmt.Println("Options_len", len(byte_s))
+	////fmt.Println("Options:::", byte_s)
 	return byte_s
 }
 
@@ -289,12 +296,14 @@ func (o Transaction) GetBytes() []byte {
 	to_data := o.To.GetBytes()
 	amount_data := o.AmountData.GetBytes()
 	memo_data := o.MemoData.GetBytes()
+	//fmt.Println("memo len:", len(memo_data))
 	extensions_data := o.ExtensionsData.GetBytes()
 	byte_s := append(fee_data,
 		append(from_data,
 			append(to_data,
 				append(amount_data,
 					append(memo_data, extensions_data...)...)...)...)...)
+	//fmt.Println("op byte len:::", len(byte_s))
 	return byte_s
 }
 
@@ -320,14 +329,20 @@ type Signed_Transaction struct {
 
 func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
+	//fmt.Println("block_num_data：", hex.EncodeToString(block_num_data))
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
+	//fmt.Println("block_prefix_data", hex.EncodeToString(block_prefix_data))
 	t, _ := time.Parse(`2006-01-02T15:04:05`, o.Expiration)
 	expiration_data := common.VarUint(uint64(t.Unix()), 32)
+	//fmt.Println("expiration_data", hex.EncodeToString(expiration_data))
 	operations_data := common.Varint(uint64(len(o.Operations)))
 	for _, op := range o.Operations {
 		operations_data = append(operations_data, op.GetBytes()...)
 	}
+	//fmt.Println("operations_data ", hex.EncodeToString(operations_data))
+	//fmt.Println("operations_data len", len(operations_data))
 	extensions_data := o.ExtensionsData.GetBytes()
+	//fmt.Println("extensions_data", hex.EncodeToString(extensions_data))
 	byte_s := append(block_num_data,
 		append(block_prefix_data,
 			append(expiration_data,
@@ -348,8 +363,10 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) *Signed_Transact
 		Signatures:     []string{},
 	}
 	byte_s := s.GetBytes()
+	//fmt.Println("st bytes len::", len(byte_s))
 	cid, _ := hex.DecodeString(chain.CocosBCXChain.Properties.ChainID)
 	byte_s = append(cid, byte_s...)
+	//fmt.Println("st + chain_id bytes len::", len(byte_s))
 	msg := sha256digest(byte_s)
 	//hex.DecodeString(chain.Chain.Properties.ChainID)
 	s.Signatures = append(s.Signatures, prk.Sign(msg))
