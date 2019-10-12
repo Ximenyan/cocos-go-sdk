@@ -3,6 +3,7 @@ package wallet
 import (
 	"cocos-go-sdk/common"
 	"cocos-go-sdk/rpc"
+	. "cocos-go-sdk/type"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -174,6 +175,7 @@ func (w *Wallet) IsEmpty() bool {
 //Transfer
 func (w *Wallet) Transfer(to, symbol string, value uint64) error {
 	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value)
+	rpc.GetRequireFeeData(0, t)
 	st := CreateSignTransaction(0, w.Default.GetActiveKey(), t)
 	return rpc.BroadcastTransaction(st)
 }
@@ -181,7 +183,9 @@ func (w *Wallet) Transfer(to, symbol string, value uint64) error {
 //upgrade_account
 
 func (w *Wallet) UpgradeAccount(name string) error {
-	t := CreateUpgradeAccount(name)
+	info := rpc.GetAccountInfoByName(name)
+	t := CreateUpgradeAccount(name, info.ID)
+	rpc.GetRequireFeeData(7, t)
 	st := CreateSignTransaction(7, w.Default.GetActiveKey(), t)
 	return rpc.BroadcastTransaction(st)
 }

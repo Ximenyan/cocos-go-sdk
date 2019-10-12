@@ -121,6 +121,8 @@ type DynamicGlobalProperties struct {
 	WitnessBudget                   int    `json:"witness_budget"`
 }
 
+//func Create
+
 func GetDynamicGlobalProperties() *DynamicGlobalProperties {
 	dgp := &DynamicGlobalProperties{}
 	req := rpc.CreateRpcRequest(rpc.CALL,
@@ -140,10 +142,6 @@ func (p *DynamicGlobalProperties) Get_ref_block_num() uint64 {
 
 func (p *DynamicGlobalProperties) Get_ref_block_prefix() uint64 {
 	byte_s, _ := hex.DecodeString(p.HeadBlockID)
-	//log.Println("Get_ref_block_prefix::", p.HeadBlockNumber)
-	//log.Println("Get_ref_block_prefix::", p.HeadBlockID)
-	//log.Println("Get_ref_block_prefix:::", common.ReverseBytes(byte_s[4:8]))
 	ref_block_prefix := new(big.Int).SetBytes(common.ReverseBytes(byte_s[4:8])).Uint64()
-	//log.Println(ref_block_prefix)
 	return ref_block_prefix
 }

@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	. "cocos-go-sdk/type"
 	"encoding/json"
 	"log"
 )
@@ -125,10 +126,10 @@ func GetAccountBalances(id string) *[]Balance {
 }
 
 type TokenInfo struct {
-	ID        string `json:"id"`
-	Symbol    string `json:"symbol"`
-	Precision int    `json:"precision"`
-	Issuer    string `json:"issuer"`
+	ID        ObjectId `json:"id"`
+	Symbol    string   `json:"symbol"`
+	Precision int      `json:"precision"`
+	Issuer    string   `json:"issuer"`
 	Options   struct {
 		MaxSupply         interface{} `json:"max_supply"`
 		MarketFeePercent  interface{} `json:"market_fee_percent"`
@@ -137,12 +138,12 @@ type TokenInfo struct {
 		Flags             int         `json:"flags"`
 		CoreExchangeRate  struct {
 			Base struct {
-				Amount  int    `json:"amount"`
-				AssetID string `json:"asset_id"`
+				Amount  interface{} `json:"amount"`
+				AssetID string      `json:"asset_id"`
 			} `json:"base"`
 			Quote struct {
-				Amount  int    `json:"amount"`
-				AssetID string `json:"asset_id"`
+				Amount  interface{} `json:"amount"`
+				AssetID string      `json:"asset_id"`
 			} `json:"quote"`
 		} `json:"core_exchange_rate"`
 		Description string        `json:"description"`
@@ -151,6 +152,35 @@ type TokenInfo struct {
 	DynamicAssetDataID string `json:"dynamic_asset_data_id"`
 }
 
+func GetTokenInfoBySymbol(symbol string) *TokenInfo {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `lookup_asset_symbols`,
+			[]interface{}{[]interface{}{symbol}}})
+	if resp, err := Client.Send(req); err == nil {
+		tokens := &[]*TokenInfo{}
+		if byte_s, err := json.Marshal(resp.Result); err == nil {
+			if err = json.Unmarshal(byte_s, tokens); err == nil {
+				return (*tokens)[0]
+			}
+			log.Println(err)
+		}
+	}
+	return nil
+}
+func GetTokenInfosBySymbol(symbols []string) *TokenInfo {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `lookup_asset_symbols`,
+			[]interface{}{symbols}})
+	if resp, err := Client.Send(req); err == nil {
+		tokens := &[]*TokenInfo{}
+		if byte_s, err := json.Marshal(resp.Result); err == nil {
+			if err = json.Unmarshal(byte_s, tokens); err == nil {
+				return (*tokens)[0]
+			}
+		}
+	}
+	return nil
+}
 func GetTokenInfo(id string) *TokenInfo {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `get_objects`,
