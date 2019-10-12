@@ -226,6 +226,7 @@ func GetAccountInfoByName(name string) *AccountInfo {
 }
 
 func BroadcastTransaction(tx interface{}) error {
+
 	req := CreateRpcRequest(CALL,
 		[]interface{}{4, `broadcast_transaction`,
 			[]interface{}{tx}})
