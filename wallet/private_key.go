@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"log"
 	"math/big"
 	"time"
@@ -118,7 +117,7 @@ func (prk PrivateKey) GetPublicKey() PublicKey {
 func (prk PrivateKey) Sign(data []byte) string {
 	//byte_s, _ := hex.DecodeString(data)
 	//byte_s := sha256digest(data)
-	fmt.Println("Sign prk:::", prk.ToBase58String())
+	//fmt.Println("Sign prk:::", prk.ToBase58String())
 	var nData int
 	nData = 0
 	for {
@@ -130,8 +129,7 @@ func (prk PrivateKey) Sign(data []byte) string {
 		if err != nil {
 			log.Panic("secp256k1 sign error!!!")
 		}
-		if is_valid(sign) {
-			log.Println(sign[64])
+		if is_valid(sign) && secp256k1.VerifySignature(prk.GetPublicKey(), data, sign[0:64]) {
 			return hex.EncodeToString(append([]byte{0x1f + sign[64]}, sign[0:64]...))
 		}
 		nData += 1

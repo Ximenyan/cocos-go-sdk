@@ -97,6 +97,7 @@ func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 		}
 	}
 	return
+	//废弃的 HTTP rpc
 	log.Println("rpc Send start:::", reqJson)
 	connectTimer := time.NewTimer(RPCCLIENT_TIMEOUT * time.Second)
 	payloadBuffer := bytes.NewReader(reqJsonByte)
