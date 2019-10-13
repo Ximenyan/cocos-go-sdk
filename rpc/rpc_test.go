@@ -38,3 +38,8 @@ func TestGetTokenInfo(t *testing.T) {
 func TestTXInfo(t *testing.T) {
 	GetTransactionById("34d90151d88b1dd1b8edb1652f383c28dc6fc5cbb834f813ae51fdac0d543214")
 }
+
+func TestGetContract(t *testing.T) {
+	c := GetContract("contract.taiken")
+	t.Log(c)
+}

@@ -17,7 +17,6 @@ func GetRequireFeeData(opID int, t OpData) *Amount {
 		}
 		return nil
 	}
-
 	return nil
 }
 
