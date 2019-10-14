@@ -24,7 +24,7 @@ type ObjectId string
 type Object interface {
 	GetBytes() []byte
 }
-
+var COCOS_ID ObjectId = ObjectId("1.3.0")
 func (o ObjectId) GetBytes() []byte {
 	num := strings.Split(string(o), `.`)[2]
 	i, _ := strconv.ParseUint(num, 10, 64)
