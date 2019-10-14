@@ -10,7 +10,7 @@ func TestVarUint(t *testing.T) {
 }
 
 func TestVarInt(t *testing.T) {
-	t.Log(VarInt(7, 32))
+	t.Log(Varint2(1))
 }
 
 func TestVarUint16(t *testing.T) {
