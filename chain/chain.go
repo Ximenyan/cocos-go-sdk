@@ -121,6 +121,8 @@ type DynamicGlobalProperties struct {
 	WitnessBudget                   int    `json:"witness_budget"`
 }
 
+//func Create
+
 func GetDynamicGlobalProperties() *DynamicGlobalProperties {
 	dgp := &DynamicGlobalProperties{}
 	req := rpc.CreateRpcRequest(rpc.CALL,

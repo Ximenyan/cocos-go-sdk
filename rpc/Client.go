@@ -87,7 +87,7 @@ func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 	ret = &RpcResp{}
 	reqJson := reqData.ToString()
 	reqJsonByte := []byte(reqJson)
-	//M := websocket.Message{}
+	log.Println("rpc Send start:::", reqJson)
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
 		var reply string
 		if err = websocket.Message.Receive(c.ws, &reply); err == nil {

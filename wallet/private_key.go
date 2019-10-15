@@ -122,10 +122,6 @@ func (prk PrivateKey) Sign(data []byte) string {
 	nData = 0
 	for {
 		sign, err := secp256k1.Sign(data, prk.GetSeckey(), nData)
-		if secp256k1.VerifySignature(prk.GetPublicKey(), data, sign[0:64]) {
-
-			log.Println("secp256k1 VerifySignature!!!")
-		}
 		if err != nil {
 			log.Panic("secp256k1 sign error!!!")
 		}

@@ -50,6 +50,9 @@ func VarInt(si int64, base uint) []byte {
 		i = new(big.Int).Lsh(i, uint(((base-l)/8)*8))
 	}
 	byte_s = append(byte_s, i.Bytes()[ln:]...)
+	if si < 0 {
+		byte_s[len(byte_s)-1] = 0x80
+	}
 	return byte_s
 }
 

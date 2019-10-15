@@ -181,12 +181,22 @@ func (w *Wallet) Transfer(to, symbol string, value uint64) error {
 }
 
 //upgrade_account
-
 func (w *Wallet) UpgradeAccount(name string) error {
 	info := rpc.GetAccountInfoByName(name)
 	t := CreateUpgradeAccount(name, info.ID)
 	rpc.GetRequireFeeData(7, t)
 	st := CreateSignTransaction(7, w.Default.GetActiveKey(), t)
+	return rpc.BroadcastTransaction(st)
+}
+
+func (w *Wallet) RegisterNhAssetCreator(name string) error {
+	info := rpc.GetAccountInfoByName(name)
+	t := &NhAssetCreator{
+		FeePayingAccount: ObjectId(info.ID),
+	}
+	t.FeeData = Amount{Amount: 0, AssetID: "1.3.0"}
+	rpc.GetRequireFeeData(46, t)
+	st := CreateSignTransaction(46, w.Default.GetActiveKey(), t)
 	return rpc.BroadcastTransaction(st)
 }
 
@@ -206,4 +216,8 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 		return nil
 	}
 	return errors.New("no account name:" + name)
+}
+
+func (w *Wallet) CreateKey() PrivateKey {
+	return CreatePrivateKey()
 }

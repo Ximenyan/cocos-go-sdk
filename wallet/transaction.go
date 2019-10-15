@@ -11,6 +11,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"math"
 	"math/rand"
 	"strconv"
 	"time"
@@ -23,14 +24,16 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 	from_puk := from_info.GetActivePuKey()
 	m_data := CreateMemo(prk, from_puk, to_puk, from_name)
 	tk_info := rpc.GetTokenInfoBySymbol(tk_symbol)
+
+	precision := math.Pow10(tk_info.Precision)
 	t := &Transaction{
-		AmountData:     Amount{Amount: value, AssetID: ObjectId(tk_info.ID)},
+		Fee:            EmptyFee(),
+		AmountData:     Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(tk_info.ID)},
 		ExtensionsData: []interface{}{},
 		From:           ObjectId(from_info.ID),
 		To:             ObjectId(to_info.ID),
 		MemoData:       m_data,
 	}
-	t.FeeData = Amount{Amount: 0, AssetID: "1.3.0"}
 	return t
 }
 

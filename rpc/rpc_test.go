@@ -35,6 +35,29 @@ func TestGetTokenInfo(t *testing.T) {
 	t.Log(string(byte_s))
 }
 
+func TestGetOrderInfo(t *testing.T) {
+	res := GetNhAssetOrderInfo("4.3.807")
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestListNhAsset(t *testing.T) {
+	res := GetNhAssetList("ximenyan1111", 1, 10, 3, []string{"block_chain"})
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+func TestListNhAssetOrder(t *testing.T) {
+	res := GetAccountNhAssetOrderList("ximenyan1111", 1, 10)
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
 func TestTXInfo(t *testing.T) {
-	GetTransactionById("34d90151d88b1dd1b8edb1652f383c28dc6fc5cbb834f813ae51fdac0d543214")
+	res := GetTransactionById("49a78da275347277ee86cbbb08020a3ce12c82a1f7b2640b14c4f0d27ac64300")
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestGetContract(t *testing.T) {
+	c := GetContract("contract.taiken")
+	t.Log(c)
 }
