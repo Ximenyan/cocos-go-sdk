@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"time"
 
 	"strconv"
 	"strings"
@@ -20,15 +21,23 @@ func PukBytesFromBase58String(base58Str string) []byte {
 	return puk
 }
 
-type ObjectId string
 type Object interface {
 	GetBytes() []byte
 }
+type ObjectId string
 
 func (o ObjectId) GetBytes() []byte {
 	num := strings.Split(string(o), `.`)[2]
 	i, _ := strconv.ParseUint(num, 10, 64)
 	return common.Varint(i)
+}
+
+type Expiration string
+
+func (o Expiration) GetBytes() []byte {
+	t, _ := time.Parse(`2006-01-02T15:04:05`, string(o))
+	expiration_data := common.VarUint(uint64(t.Unix()), 32)
+	return expiration_data
 }
 
 type Amount struct {
@@ -135,6 +144,120 @@ func (o NhAsset) GetBytes() []byte {
 	return byte_s
 }
 
+type TransferNh struct {
+	Fee
+	From    ObjectId `json:"from"`
+	To      ObjectId `json:"to"`
+	NhAsset ObjectId `json:"nh_asset"`
+}
+
+func (o TransferNh) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	from_data := o.From.GetBytes()
+	to_data := o.To.GetBytes()
+	nh_asset_data := o.NhAsset.GetBytes()
+	byte_s := append(fee_data,
+		append(from_data,
+			append(to_data, nh_asset_data...)...)...)
+	return byte_s
+}
+
+type DelNhAsset struct {
+	NhAssetCreator
+	NhAsset ObjectId `json:"nh_asset"`
+}
+
+func (o DelNhAsset) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	fpa_data := o.FeePayingAccount.GetBytes()
+	nh_asset_data := o.NhAsset.GetBytes()
+	byte_s := append(fee_data, append(fpa_data, nh_asset_data...)...)
+	return byte_s
+}
+
+type NhOrder struct {
+	Fee
+	Seller           ObjectId   `json:"seller"`
+	Otcaccount       ObjectId   `json:"otcaccount"`
+	PendingOrdersFee Amount     `json:"pending_orders_fee"`
+	NhAsset          ObjectId   `json:"nh_asset"`
+	Memo             String     `json:"memo"`
+	Price            Amount     `json:"price"`
+	Expiration       Expiration `json:"expiration"`
+}
+
+func (o NhOrder) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	seller_data := o.Seller.GetBytes()
+	otc_acc_data := o.Otcaccount.GetBytes()
+	pof_data := o.PendingOrdersFee.GetBytes()
+	nh_asset_data := o.NhAsset.GetBytes()
+	memo_data := o.Memo.GetBytes()
+	price_data := o.Price.GetBytes()
+	expiration_data := o.Expiration.GetBytes()
+	byte_s := append(fee_data,
+		append(seller_data,
+			append(otc_acc_data,
+				append(pof_data,
+					append(nh_asset_data,
+						append(memo_data,
+							append(price_data, expiration_data...)...)...)...)...)...)...)
+	return byte_s
+}
+
+type FillNhOrder struct {
+	Fee
+	Order            ObjectId   `json:"order"`
+	FeePayingAccount ObjectId   `json:"fee_paying_account"`
+	Seller           ObjectId   `json:"seller"`
+	NhAsset          ObjectId   `json:"nh_asset"`
+	PriceAmount      String     `json:"price_amount"`
+	PriceAssetID     ObjectId   `json:"price_asset_id"`
+	PriceAssetSymbol String     `json:"price_asset_symbol"`
+	Extensions       Extensions `json:"extensions"`
+}
+
+func (o FillNhOrder) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	order_data := o.Order.GetBytes()
+	fpa_data := o.FeePayingAccount.GetBytes()
+	seller_data := o.Seller.GetBytes()
+	nh_asset_data := o.NhAsset.GetBytes()
+	price_amount_data := o.PriceAmount.GetBytes()
+	price_id_data := o.PriceAssetID.GetBytes()
+	price_symbol_data := o.PriceAssetSymbol.GetBytes()
+	extensions_data := o.Extensions.GetBytes()
+	byte_s := append(fee_data,
+		append(order_data,
+			append(fpa_data,
+				append(seller_data,
+					append(nh_asset_data,
+						append(price_amount_data,
+							append(price_id_data,
+								append(price_symbol_data, extensions_data...)...)...)...)...)...)...)...)
+	//fmt.Println("CancelOrder::", len(byte_s))
+	return byte_s
+}
+
+type CancelOrder struct {
+	Fee
+	Order            ObjectId   `json:"order"`
+	FeePayingAccount ObjectId   `json:"fee_paying_account"`
+	Extensions       Extensions `json:"extensions"`
+}
+
+func (o CancelOrder) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	order_data := o.Order.GetBytes()
+	fpa_data := o.FeePayingAccount.GetBytes()
+	extensions_data := o.Extensions.GetBytes()
+	byte_s := append(fee_data,
+		append(order_data,
+			append(fpa_data, extensions_data...)...)...)
+	fmt.Println("CancelOrder::", len(byte_s))
+	return byte_s
+}
+
 type UpgradeAccount struct {
 	Fee
 	AccountToUpgrade        ObjectId   `json:"account_to_upgrade"`
@@ -148,7 +271,7 @@ func CreateUpgradeAccount(name string, account_id string) *UpgradeAccount {
 		AccountToUpgrade:        ObjectId(account_id),
 		UpgradeToLifetimeMember: true,
 	}
-	u.FeeData = Amount{Amount: 0, AssetID: "1.3.0"}
+	u.FeeData = Amount{Amount: 0, AssetID: COCOS_ID}
 	return u
 }
 

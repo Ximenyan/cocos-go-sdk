@@ -34,20 +34,22 @@ func ReviseContractByFile(c_name, path string) error {
 	return ReviseContract(c_name, data)
 }
 
+/*创建合约*/
+/*c_auth:公钥*/
 func CreateContract(c_name, c_auth, data string) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	contract := &CreateContractData{
+		Fee:               EmptyFee(),
 		ContractAuthority: c_auth,
 		Extensions:        []interface{}{},
 		Data:              String(data),
 		Name:              String(c_name),
 		Owner:             ObjectId(Wallet.Default.Info.ID),
 	}
-	contract.FeeData = Amount{Amount: 0, AssetID: ObjectId("1.3.0")}
-	rpc.GetRequireFeeData(43, contract)
-	st := wallet.CreateSignTransaction(43, Wallet.Default.GetActiveKey(), contract)
+	rpc.GetRequireFeeData(OP_CREATE_CONTRACT, contract)
+	st := wallet.CreateSignTransaction(OP_CREATE_CONTRACT, Wallet.Default.GetActiveKey(), contract)
 	rpc.BroadcastTransaction(st)
 	return nil
 }

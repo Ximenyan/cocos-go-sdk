@@ -15,6 +15,7 @@ func (r *RpcResp) GetInterface(obj interface{}) (err error) {
 	var byte_s []byte
 	if byte_s, err = json.Marshal(r.Result); err == nil {
 		if err = json.Unmarshal(byte_s, obj); err == nil {
+			//fmt.Println("GetTransactionById:", obj)
 			return nil
 		}
 

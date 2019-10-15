@@ -27,7 +27,6 @@ func (o LuaObject) GetBytes() []byte {
 	switch o.Type {
 	case STRING:
 		byte_s = append(common.Varint(o.Type), String(o.Value.(string)).GetBytes()...)
-
 	case INT:
 		byte_s = append(common.Varint(o.Type), common.VarInt(int64(o.Value.(int)), 64)...)
 	case BOOL:

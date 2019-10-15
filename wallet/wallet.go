@@ -217,3 +217,7 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 	}
 	return errors.New("no account name:" + name)
 }
+
+func (w *Wallet) CreateKey() PrivateKey {
+	return CreatePrivateKey()
+}
