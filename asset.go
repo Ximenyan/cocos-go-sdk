@@ -139,7 +139,7 @@ func CreateWorldView(name string) error {
 }
 
 /*创建 token*/
-func CreateAsset(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error {
+func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error {
 	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
 	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	if Wallet.Default.Info == nil {
@@ -206,4 +206,10 @@ func GetNhAssetOrderList(asset_name, world_view string, page, page_size int) *rp
 /*查询NH 资产列表*/
 func GetNhAssetList(acc_name string, page, page_size, _type int, world_view ...string) *rpc.AssetsList {
 	return rpc.GetNhAssetList(acc_name, page, page_size, _type, world_view)
+}
+
+/*查询账户Balance*/
+func GetAccountBalances(acc_name string) *[]rpc.Balance {
+	acc_info := rpc.GetAccountInfoByName(acc_name)
+	return rpc.GetAccountBalances(acc_info.ID)
 }
