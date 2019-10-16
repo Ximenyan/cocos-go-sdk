@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"cocos-go-sdk/common/math"
-	"cocos-go-sdk/wallet/base58-go"
+	"cocos-go-sdk/crypto/base58-go"
 )
 
 type PrivateKey struct {
