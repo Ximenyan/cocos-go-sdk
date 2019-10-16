@@ -1,11 +1,12 @@
 package wallet
 
 import (
-	"cocos-go-sdk/crypto/secp256k1"
 	"crypto/sha256"
 	"math/big"
 
-	"github.com/itchyny/base58-go"
+	"cocos-go-sdk/crypto/base58-go"
+	"cocos-go-sdk/crypto/secp256k1"
+
 	"golang.org/x/crypto/ripemd160"
 )
 

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/itchyny/base58-go"
+	"cocos-go-sdk/crypto/base58-go"
 )
 
 func PukBytesFromBase58String(base58Str string) []byte {

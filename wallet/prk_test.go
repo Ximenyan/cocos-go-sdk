@@ -52,13 +52,3 @@ func TestPrk(t *testing.T) {
 	m.CryptBlocks(byte_s_msg, byte_s_msg)
 	t.Log(hex.EncodeToString(byte_s_msg))
 }
-
-func TestAmount(t *testing.T) {
-	o := Amount{20898, "1.3.0"}
-	t.Log(len(o.GetBytes()))
-}
-
-func TestMemo(t *testing.T) {
-	o := Memo{"COCOS6wm6Cqmz82xdxsaXMAiffTRaLDNAS4UAEmyGfTxWq5PSCT2ekw", "COCOS6wm6Cqmz82xdxsaXMAiffTRaLDNAS4UAEmyGfTxWq5PSCT2ekw", 11324465970958071439, "d0b239feb4d1927b7827de6be9177b95"}
-	t.Log(len(o.GetBytes()))
-}
