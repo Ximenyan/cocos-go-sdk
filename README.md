@@ -31,7 +31,7 @@ func main() {
 - [账户相关API](#账户相关API)
 - [资产相关API](#资产相关API)
 - [合约相关API](#合约相关API)
-
+- [部分查询API](#部分查询API)
 ### 钱包相关API
 
 #### 加载钱包
@@ -240,4 +240,54 @@ func main() {
 	contract_name ： 合约名
 	func_name ： 调用方法名
 	args  ：参数
+```
+### 部分查询API
+
+#### 查询订单信息
+
+```
+方法：GetNhAssetOrderInfo(id string) NhAssetOrderInfo
+参数：
+参数：
+	id ： 订单ID
+	func_name ： 调用方法名
+	args  ：参数
+```
+
+
+#### owner订单列表
+
+```
+方法： GetAccountNhAssetOrderList(owner_name string, page, page_size int) OrdersList
+```
+#### 查询订单列表
+
+```
+方法： GetNhAssetOrderList(asset_name, world_view string, page, page_size int) OrdersList
+```
+#### owner订单列表
+
+```
+方法： GetAccountNhAssetOrderList(owner_name string, page, page_size int) OrdersList
+```
+#### owner资产列表
+
+```
+方法： GetNhAssetList(acc_name string, page, page_size, _type int, world_view ...string) AssetsList
+```
+
+#### 查询区块
+
+```
+方法：  GetBlock(block_hight int) Block
+```
+#### 查询交易信息
+
+```
+方法： GetTransactionById(txId string) TransactinInf
+```
+#### 查询账户Balance
+
+```
+方法： GetAccountBalances(acc_name string) *[]rpc.Balance
 ```
