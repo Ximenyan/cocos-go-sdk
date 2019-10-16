@@ -17,12 +17,12 @@ import (
 	"time"
 )
 
-func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value uint64) *Transaction {
+func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value uint64, memo string) *Transaction {
 	to_info := rpc.GetAccountInfoByName(to_name)
 	to_puk := to_info.GetActivePuKey()
 	from_info := rpc.GetAccountInfoByName(from_name)
 	from_puk := from_info.GetActivePuKey()
-	m_data := CreateMemo(prk, from_puk, to_puk, from_name)
+	m_data := CreateMemo(prk, from_puk, to_puk, memo)
 	tk_info := rpc.GetTokenInfoBySymbol(tk_symbol)
 	precision := math.Pow10(tk_info.Precision)
 	t := &Transaction{

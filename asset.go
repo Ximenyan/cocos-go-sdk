@@ -169,7 +169,7 @@ func CreateAsset(symbol, asset, _asset string, max_supply, precision, amount, _a
 }
 
 /*发币*/
-func IssueToken(symbol, issue_to_account string, amount float64) {
+func IssueToken(symbol, issue_to_account string, amount float64) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -185,7 +185,7 @@ func IssueToken(symbol, issue_to_account string, amount float64) {
 	}
 	rpc.GetRequireFeeData(13, issue)
 	st := wallet.CreateSignTransaction(13, Wallet.Default.GetActiveKey(), issue)
-	rpc.BroadcastTransaction(st)
+	return rpc.BroadcastTransaction(st)
 }
 
 /*查询订单信息*/
