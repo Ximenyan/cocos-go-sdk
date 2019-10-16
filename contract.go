@@ -50,12 +50,10 @@ func CreateContract(c_name, c_auth, data string) error {
 	}
 	rpc.GetRequireFeeData(OP_CREATE_CONTRACT, contract)
 	st := wallet.CreateSignTransaction(OP_CREATE_CONTRACT, Wallet.Default.GetActiveKey(), contract)
-	rpc.BroadcastTransaction(st)
-	return nil
+	return rpc.BroadcastTransaction(st)
 }
 func CreateContractByFile(c_name, c_auth, path string) error {
 	byte_s, err := ioutil.ReadFile(path)
-
 	if err != nil {
 		return err
 	}

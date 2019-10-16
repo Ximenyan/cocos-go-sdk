@@ -48,7 +48,7 @@ func (w *Wallet) LoadWallet(path string) (err error) {
 	w.Lock()
 	defer w.Unlock()
 	if w.path != path {
-		w.Save()
+		w.save()
 	}
 	msh, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -109,16 +109,8 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 			Private_Key: prk,
 		}
 		w.Accounts[info.Name].KeyPairs = append(w.Accounts[info.Name].KeyPairs, ownerPair)
-	} /*else {
-		unknowPair := KeyPair{
-			Type:        "unknow",
-			PubKey:      puk,
-			EncryptWif:  encryptWif,
-			Private_Key: prk,
-		}
-		w.Accounts[info.Name].KeyPairs = append(w.Accounts[info.Name].KeyPairs, unknowPair)
-	}*/
-	w.Save()
+	}
+	w.save()
 	return
 }
 
@@ -130,12 +122,12 @@ func (w *Wallet) CreateAccount(name string, password string) (err error) {
 		w.Default.Info = rpc.GetAccountInfoByName(w.Default.Name)
 	}
 	w.Accounts[name] = CreateAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID) //append(w.Accounts, CreateAccount(name, password))
-	w.Save()
+	w.save()
 	return
 }
 
 //保存钱包到文件
-func (this *Wallet) Save() error {
+func (this *Wallet) save() error {
 	data, err := json.Marshal(this)
 	if err != nil {
 		return err
@@ -149,6 +141,24 @@ func (this *Wallet) Save() error {
 		return os.Rename(filename, this.path)
 	} else {
 		return ioutil.WriteFile(this.path, data, 0644)
+	}
+}
+
+//保存钱包到文件
+func (this *Wallet) SaveAs(path string) error {
+	data, err := json.Marshal(this)
+	if err != nil {
+		return err
+	}
+	if common.FileExisted(path) {
+		filename := this.path
+		err := ioutil.WriteFile(filename, data, 0644)
+		if err != nil {
+			return err
+		}
+		return os.Rename(filename, path)
+	} else {
+		return ioutil.WriteFile(path, data, 0644)
 	}
 }
 
@@ -173,8 +183,8 @@ func (w *Wallet) IsEmpty() bool {
 }
 
 //Transfer
-func (w *Wallet) Transfer(to, symbol string, value uint64) error {
-	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value)
+func (w *Wallet) Transfer(to, symbol, memo string, value uint64) error {
+	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo)
 	rpc.GetRequireFeeData(0, t)
 	st := CreateSignTransaction(0, w.Default.GetActiveKey(), t)
 	return rpc.BroadcastTransaction(st)

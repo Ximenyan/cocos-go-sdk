@@ -226,15 +226,18 @@ func GetAccountInfoByName(name string) *AccountInfo {
 }
 
 func BroadcastTransaction(tx interface{}) error {
-
 	req := CreateRpcRequest(CALL,
 		[]interface{}{4, `broadcast_transaction`,
 			[]interface{}{tx}})
 	log.Println("transaction>>>>>", req.ToString())
 	if resp, err := Client.Send(req); err == nil {
-		log.Println("BroadcastTransaction ::", resp.Result)
+		txId := ""
+		if err = resp.GetInterface(&txId); err == nil {
+			log.Println("BroadcastTransaction TXID::", txId)
+			return nil
+		}
+		return err
 	} else {
-		log.Println("BroadcastTransaction err::", err)
+		return err
 	}
-	return nil
 }

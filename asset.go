@@ -7,7 +7,6 @@ import (
 	"math"
 )
 
-
 /*吃单 NH 资产买入*/
 func FillNhAsset(order_id string) error {
 	if Wallet.Default.Info == nil {
@@ -140,7 +139,7 @@ func CreateWorldView(name string) error {
 }
 
 /*创建 token*/
-func CreateAsset(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error {
+func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error {
 
 	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
 	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
@@ -171,7 +170,7 @@ func CreateAsset(symbol, asset, _asset string, max_supply, precision, amount, _a
 }
 
 /*发币*/
-func IssueToken(symbol, issue_to_account string, amount float64) {
+func IssueToken(symbol, issue_to_account string, amount float64) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -187,7 +186,7 @@ func IssueToken(symbol, issue_to_account string, amount float64) {
 	}
 	rpc.GetRequireFeeData(13, issue)
 	st := wallet.CreateSignTransaction(13, Wallet.Default.GetActiveKey(), issue)
-	rpc.BroadcastTransaction(st)
+	return rpc.BroadcastTransaction(st)
 }
 
 /*查询订单信息*/
@@ -208,4 +207,10 @@ func GetNhAssetOrderList(asset_name, world_view string, page, page_size int) *rp
 /*查询NH 资产列表*/
 func GetNhAssetList(acc_name string, page, page_size, _type int, world_view ...string) *rpc.AssetsList {
 	return rpc.GetNhAssetList(acc_name, page, page_size, _type, world_view)
+}
+
+/*查询账户Balance*/
+func GetAccountBalances(acc_name string) *[]rpc.Balance {
+	acc_info := rpc.GetAccountInfoByName(acc_name)
+	return rpc.GetAccountBalances(acc_info.ID)
 }
