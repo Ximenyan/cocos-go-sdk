@@ -108,7 +108,28 @@ func main() {
 	issue_to_account    接受Token的账户
 	amount	            发行数量
 ```
+#### Toke更新
+```
+方法：sdk.UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision, amount, _amount uint64) error 
+参数：
+    new_issuer 新发行人
+	symbol   token简写
+	asset    基准资产ID
+	_asset	 标价资产ID
+	max_supplay 最大发行量
+	precision   精度
+	amount   基准资产数量
+	_amount  标价资产数量
+	
+```
 
+#### Token销毁
+```
+方法：sdk.ReserveToken(symbol,  amount float64) error
+参数：
+	symbol              token简写
+	amount	            销毁数量
+```
 #### Token转账
 ```
 方法：sdk.Wallet.Transfer(to, symbol, memo string, value uint64) error
