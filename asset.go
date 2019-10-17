@@ -138,6 +138,57 @@ func CreateWorldView(name string) error {
 	return rpc.BroadcastTransaction(st)
 }
 
+/*更新 token*/
+func UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision, amount, _amount uint64) error {
+	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
+	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
+	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	new_issuer_info := rpc.GetAccountInfoByName(new_issuer)
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	cm_op := CommonOptions{
+		MaxSupply:            max_supply * precision,
+		MarketFeePercent:     0,
+		MaxMarketFee:         0,
+		Flags:                0,
+		IssuerPermissions:    79,
+		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
+		Description:          String(`{"main":"` + symbol + `","short_name":"","market":""}`),
+		Extensions:           []interface{}{},
+	}
+	AssetData := &UpdateAssetData{
+		Fee:            EmptyFee(),
+		Extensions:     []interface{}{},
+		NewIssuer:      ObjectId(new_issuer_info.ID),
+		Issuer:         ObjectId(Wallet.Default.Info.ID),
+		AssetToUpdate:  ObjectId(update_asset_info.ID),
+		NewOptionsData: cm_op,
+	}
+	rpc.GetRequireFeeData(9, AssetData)
+	st := wallet.CreateSignTransaction(9, Wallet.Default.GetActiveKey(), AssetData)
+	return rpc.BroadcastTransaction(st)
+}
+
+/*销毁 token*/
+func ReserveToken(symbol string, amount float64) error {
+	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
+
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	AssetData := &ReserveTokenData{
+		Extensions:      []interface{}{},
+		Payer:           ObjectId(Wallet.Default.Info.ID),
+		AmountToReserve: Amount{Amount: uint64(float64(amount) * precision), AssetID: ObjectId(asset_info.ID)},
+		Fee:             EmptyFee(),
+	}
+	rpc.GetRequireFeeData(14, AssetData)
+	st := wallet.CreateSignTransaction(14, Wallet.Default.GetActiveKey(), AssetData)
+	return rpc.BroadcastTransaction(st)
+}
+
 /*创建 token*/
 func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error {
 	base := Amount{Amount: amount, AssetID: ObjectId(asset)}

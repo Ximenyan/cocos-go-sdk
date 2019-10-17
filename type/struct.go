@@ -486,6 +486,32 @@ func (o CreateAssetData) GetBytes() []byte {
 	return byte_s
 }
 
+/*创建代币的数据结构*/
+type UpdateAssetData struct {
+	Fee
+	AssetToUpdate  ObjectId      `json:"asset_to_update"`
+	Issuer         ObjectId      `json:"issuer"`
+	NewIssuer      ObjectId      `json:"new_issuer"`
+	NewOptionsData CommonOptions `json:"new_options"`
+	Extensions     Extensions    `json:"extensions"`
+}
+
+func (o UpdateAssetData) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	issuer_data := o.Issuer.GetBytes()
+	new_issuer_data := o.NewIssuer.GetBytes()
+	asset_data := o.AssetToUpdate.GetBytes()
+	cod_data := o.NewOptionsData.GetBytes()
+	extensions_data := o.Extensions.GetBytes()
+	byte_s := append(fee_data,
+		append(issuer_data,
+			append(new_issuer_data,
+				append(asset_data,
+					append(cod_data, extensions_data...)...)...)...)...)
+	//fmt.Println("CreateAssetData byte len:::", len(byte_s))
+	return byte_s
+}
+
 /*创建發行代币的数据结构*/
 type IssueAsset struct {
 	Fee
@@ -502,7 +528,21 @@ func (o IssueAsset) GetBytes() []byte {
 				append(o.IssueToAccount.GetBytes(),
 					append([]byte{0x0},
 						o.Extensions.GetBytes()...)...)...)...)...)
-	fmt.Println("IssueAsset len:::", len(byte_s))
+	return byte_s
+}
+
+type ReserveTokenData struct {
+	Extensions      Extensions `json:"extensions"`
+	Payer           ObjectId   `json:"payer"`
+	AmountToReserve Amount     `json:"amount_to_reserve"`
+	Fee
+}
+
+func (o ReserveTokenData) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.Payer.GetBytes(),
+			append(o.AmountToReserve.GetBytes(),
+				o.Extensions.GetBytes()...)...)...)
 	return byte_s
 }
 
