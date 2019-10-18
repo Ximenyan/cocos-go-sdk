@@ -7,7 +7,13 @@ import (
 const COCOS_ID = `1.3.0`
 const TIME_FORMAT = `2006-01-02T15:04:05`
 const (
+	DATABASE_API_ID = 2
+)
+const (
 	OP_CREATE_CONTRACT = 43
+	OP_PROPOSAL        = 21
+	OP_APPROVAL        = 22
+	OP_CLAIM_FEES      = 39
 )
 
 func EmptyFee() Fee {

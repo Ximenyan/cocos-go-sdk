@@ -2,24 +2,37 @@ package rpc
 
 import (
 	. "cocos-go-sdk/type"
+	"encoding/json"
 )
 
 const CALL = `call`
 const EMPTY = ""
 
-func GetRequireFeeData(opID int, t OpData) *Amount {
-	fee := &[]*Amount{}
+func GetRequireFeeData(opID int, t OpData) (interface{}, error) {
+	fees := &[]interface{}{}
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `get_required_fees`,
 			[]interface{}{[]interface{}{[]interface{}{opID, t}}, "1.3.0"}})
 	if resp, err := Client.Send(req); err == nil {
-		if err = resp.GetInterface(fee); err == nil {
-			t.SetFee((*fee)[0].Amount)
-			return (*fee)[0]
+		var iter interface{}
+		var byte_s []byte
+		iter = resp.Result
+		for iter != nil {
+			amount := &Amount{}
+			if byte_s, err = json.Marshal(iter); err == nil {
+				if err = json.Unmarshal(byte_s, amount); err == nil {
+					t.SetFee(amount.Amount)
+					return amount, nil
+				}
+				if err = json.Unmarshal(byte_s, fees); err == nil {
+					iter = (*fees)[0]
+				}
+			}
 		}
-		return nil
+		return resp.Result, err
+	} else {
+		return nil, err
 	}
-	return nil
 }
 
 type TransactinInfo struct {

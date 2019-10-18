@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	. "cocos-go-sdk/type"
 	"encoding/json"
 	"log"
 )
@@ -125,33 +124,6 @@ func GetAccountBalances(id string) *[]Balance {
 	return nil
 }
 
-type TokenInfo struct {
-	ID        ObjectId `json:"id"`
-	Symbol    string   `json:"symbol"`
-	Precision int      `json:"precision"`
-	Issuer    string   `json:"issuer"`
-	Options   struct {
-		MaxSupply         interface{} `json:"max_supply"`
-		MarketFeePercent  interface{} `json:"market_fee_percent"`
-		MaxMarketFee      interface{} `json:"max_market_fee"`
-		IssuerPermissions interface{} `json:"issuer_permissions"`
-		Flags             int         `json:"flags"`
-		CoreExchangeRate  struct {
-			Base struct {
-				Amount  interface{} `json:"amount"`
-				AssetID string      `json:"asset_id"`
-			} `json:"base"`
-			Quote struct {
-				Amount  interface{} `json:"amount"`
-				AssetID string      `json:"asset_id"`
-			} `json:"quote"`
-		} `json:"core_exchange_rate"`
-		Description string        `json:"description"`
-		Extensions  []interface{} `json:"extensions"`
-	} `json:"options"`
-	DynamicAssetDataID string `json:"dynamic_asset_data_id"`
-}
-
 func GetTokenInfoBySymbol(symbol string) *TokenInfo {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `lookup_asset_symbols`,
@@ -196,20 +168,6 @@ func GetTokenInfo(id string) *TokenInfo {
 	return nil
 }
 
-func GetTokensInfo(ids []string) []*TokenInfo {
-	req := CreateRpcRequest(CALL,
-		[]interface{}{0, `get_objects`,
-			[]interface{}{ids}})
-	if resp, err := Client.Send(req); err == nil {
-		tokens := &[]*TokenInfo{}
-		if byte_s, err := json.Marshal(resp.Result); err == nil {
-			if err = json.Unmarshal(byte_s, tokens); err == nil {
-				return *tokens
-			}
-		}
-	}
-	return nil
-}
 func GetAccountInfoByName(name string) *AccountInfo {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `lookup_account_names`,

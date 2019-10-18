@@ -61,3 +61,21 @@ func TestGetContract(t *testing.T) {
 	c := GetContract("contract.taiken")
 	t.Log(c)
 }
+func TestQueryToken(t *testing.T) {
+
+	req := CreateRpcRequest(CALL,
+		[]interface{}{1, `database`,
+			[]interface{}{}})
+	if _, err := Client.Send(req); err != nil {
+		return
+	}
+	res := QueryTokenList()
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestLookWorldView(t *testing.T) {
+	res := GetWorldViewInfo("block_chain")
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}

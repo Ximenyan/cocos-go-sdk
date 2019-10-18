@@ -122,6 +122,53 @@ func CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) e
 	st := wallet.CreateSignTransaction(49, Wallet.Default.GetActiveKey(), nh_asset)
 	return rpc.BroadcastTransaction(st)
 }
+func ApprovalsProposal(proposal_id string) error {
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	approval := &Approvals{
+		Fee:                     EmptyFee(),
+		FeePayingAccount:        ObjectId(Wallet.Default.Info.ID),
+		Proposal:                ObjectId(proposal_id),
+		ActiveApprovalsToAdd:    []Object{ObjectId(Wallet.Default.Info.ID)},
+		ActiveApprovalsToRemove: []Object{},
+		OwnerApprovalsToAdd:     []Object{},
+		OwnerApprovalsToRemove:  []Object{},
+		KeyApprovalsToAdd:       []Object{},
+		KeyApprovalsToRemove:    []Object{},
+		Extensions:              []interface{}{},
+	}
+	return Wallet.SignAndSendTX(OP_APPROVAL, approval)
+}
+
+/*提议关联世界观*/
+func RelateWorldView(world_view string) error {
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	world_view_info := rpc.GetWorldViewInfo(world_view)
+	creator := rpc.GetWorldViewCreator(world_view_info.WorldViewCreator)
+	op_data := &ProposedOps{
+		Fee:            EmptyFee(),
+		RelatedAccount: ObjectId(Wallet.Default.Info.ID),
+		WorldView:      String(world_view),
+		ViewOwner:      ObjectId(creator.Creator),
+	}
+	rpc.GetRequireFeeData(48, op_data)
+	ops := OPS{
+		ID:  48,
+		Ops: *op_data,
+	}
+	op := &RelatedWorldView{
+		Fee:              EmptyFee(),
+		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
+		ExpirationTime:   GetExpiration(),
+		ProposedOps:      []OPS{ops},
+		Extensions:       []interface{}{},
+	}
+	//fees := rpc.GetRequireFeeData(21, op)
+	return Wallet.SignAndSendTX(OP_PROPOSAL, op)
+}
 
 /*創建世界觀*/
 func CreateWorldView(name string) error {
@@ -219,6 +266,22 @@ func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 	return rpc.BroadcastTransaction(st)
 }
 
+/*发行人 可以领取累计的手续费*/
+func ClaimFees(symbol string, value float64) error {
+	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	ctf := &ClaimTokenFees{
+		Extensions:    []interface{}{},
+		Issuer:        ObjectId(Wallet.Default.Info.ID),
+		AmountToClaim: Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(asset_info.ID)},
+		Fee:           EmptyFee(),
+	}
+	return Wallet.SignAndSendTX(OP_CLAIM_FEES, ctf)
+}
+
 /*发币*/
 func IssueToken(symbol, issue_to_account string, amount float64) error {
 	if Wallet.Default.Info == nil {
@@ -263,4 +326,19 @@ func GetNhAssetList(acc_name string, page, page_size, _type int, world_view ...s
 func GetAccountBalances(acc_name string) *[]rpc.Balance {
 	acc_info := rpc.GetAccountInfoByName(acc_name)
 	return rpc.GetAccountBalances(acc_info.ID)
+}
+
+/*查询链上所有token信息*/
+func GetAllTokenInfo() []*rpc.TokenInfo {
+	return rpc.QueryTokenList()
+}
+
+/*查询收到的所有提议*/
+func GetAllProposals(acct_id string) *[]rpc.Proposal {
+	return rpc.GetProposals(acct_id)
+}
+
+/*查询 某条提议*/
+func GetAllProposal(proposal_id string) *[]rpc.Proposal {
+	return rpc.GetProposals(acct_id)
 }
