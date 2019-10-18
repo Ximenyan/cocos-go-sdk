@@ -122,6 +122,8 @@ func CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) e
 	st := wallet.CreateSignTransaction(49, Wallet.Default.GetActiveKey(), nh_asset)
 	return rpc.BroadcastTransaction(st)
 }
+
+/*批准 关联世界观的提议*/
 func ApprovalsProposal(proposal_id string) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
@@ -340,5 +342,5 @@ func GetAllProposals(acct_id string) *[]rpc.Proposal {
 
 /*查询 某条提议*/
 func GetAllProposal(proposal_id string) *[]rpc.Proposal {
-	return rpc.GetProposals(acct_id)
+	return rpc.GetProposals(proposal_id)
 }

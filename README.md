@@ -148,7 +148,18 @@ func main() {
 参数：
 	name              世界观名称
 ```
-
+#### 提议关联世界观
+```
+方法：sdk.RelateWorldView(world_view string) error
+参数：
+	world_view              世界观名称
+```
+#### 批准关联世界观的提议
+```
+方法：sdk.ApprovalsProposal(proposal_id string) error
+参数：
+	proposal_id              提议的ID
+```
 #### 创建NH资产
 ```
 方法：sdk.CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) error
@@ -311,4 +322,21 @@ func main() {
 
 ```
 方法： GetAccountBalances(acc_name string) *[]rpc.Balance
+```
+#### 查询链上所有token信息
+
+```
+方法： sdk.GetAllTokenInfo() []*rpc.TokenInfo
+```
+
+
+#### 查询收到的所有提议
+
+```
+方法： sdk.GetAllProposals(acct_id string) *[]rpc.Proposal
+```
+
+#### 查询 某条提议
+```
+方法： sdk.GetAllProposal(proposal_id string) *[]rpc.Proposal
 ```
