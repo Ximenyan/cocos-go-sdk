@@ -546,6 +546,23 @@ func (o ReserveTokenData) GetBytes() []byte {
 	return byte_s
 }
 
+type TokenFeePoolData struct {
+	AssetID ObjectId `json:"asset_id"`
+	Fee
+	FromAccount ObjectId   `json:"from_account"`
+	Extensions  Extensions `json:"extensions"`
+	Amount      uint64     `json:"amount"`
+}
+
+func (o TokenFeePoolData) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.FromAccount.GetBytes(),
+			append(o.AssetID.GetBytes(),
+				append(common.VarUint(o.Amount, 64),
+					o.Extensions.GetBytes()...)...)...)...)
+	return byte_s
+}
+
 type Transaction struct {
 	Fee
 	From           ObjectId   `json:"from"`

@@ -219,6 +219,25 @@ func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 	return rpc.BroadcastTransaction(st)
 }
 
+/*注册手续费池*/
+func TokenFundFeePool(symbol string, amount float64) error {
+	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	feePool := &TokenFeePoolData{
+		AssetID:     ObjectId(asset_info.ID),
+		Fee:         EmptyFee(),
+		FromAccount: ObjectId(Wallet.Default.Info.ID),
+		Amount:      uint64(float64(amount) * precision),
+		Extensions:  []interface{}{},
+	}
+	rpc.GetRequireFeeData(15, feePool)
+	st := wallet.CreateSignTransaction(15, Wallet.Default.GetActiveKey(), feePool)
+	return rpc.BroadcastTransaction(st)
+}
+
 /*发币*/
 func IssueToken(symbol, issue_to_account string, amount float64) error {
 	if Wallet.Default.Info == nil {
