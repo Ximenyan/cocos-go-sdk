@@ -294,6 +294,7 @@ func TokenFundFeePool(symbol string, amount float64) error {
 	}
 	return Wallet.SignAndSendTX(OP_FUND_FEEPOOL, feePool)
 }
+
 func CreateVestingBalance(symbol string, amount float64) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
@@ -315,6 +316,7 @@ func CreateVestingBalance(symbol string, amount float64) error {
 	fmt.Println(v)
 	return Wallet.SignAndSendTX(OP_VESTING_CREATE, v)
 }
+
 func WithdrawVestingBalance(balance_id string) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
