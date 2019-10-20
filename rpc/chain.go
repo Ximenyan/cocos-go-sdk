@@ -1,8 +1,12 @@
 package rpc
 
 import (
+	"cocos-go-sdk/common"
 	. "cocos-go-sdk/type"
+	"encoding/hex"
 	"encoding/json"
+	"log"
+	"math/big"
 )
 
 const CALL = `call`
@@ -90,6 +94,62 @@ func GetBlocks(blocks []int) *[]Block {
 	if resp, err := Client.Send(req); err == nil {
 		if err = resp.GetInterface(blocks_info); err == nil {
 			return blocks_info
+		}
+	}
+	return nil
+}
+
+type BlockHeader struct {
+	Extensions            []interface{} `json:"extensions"`
+	Previous              string        `json:"previous"`
+	Timestamp             string        `json:"timestamp"`
+	TransactionMerkleRoot string        `json:"transaction_merkle_root"`
+	Witness               string        `json:"witness"`
+}
+
+func GetBlockHeader(block int) *BlockHeader {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{DATABASE_API_ID, `get_block_header`,
+			[]interface{}{block}})
+	header := &BlockHeader{}
+	if resp, err := Client.Send(req); err == nil {
+		if err = resp.GetInterface(header); err == nil {
+			return header
+		}
+	}
+	return nil
+}
+
+type VestingBalances struct {
+	Balance struct {
+		Amount  interface{} `json:"amount"`
+		AssetID string      `json:"asset_id"`
+	} `json:"balance"`
+	ID     string        `json:"id"`
+	Owner  string        `json:"owner"`
+	Policy []interface{} `json:"policy"`
+}
+
+func (v VestingBalances) GetBalanceAmount() uint64 {
+	if str, b := v.Balance.Amount.(string); b {
+		byte_s, _ := hex.DecodeString(str)
+		byte_s = common.ReverseBytes(byte_s)
+		return new(big.Int).SetBytes(byte_s).Uint64()
+	} else {
+		return uint64(v.Balance.Amount.(float64))
+	}
+	log.Panicln("VestingBalances  GetBalanceAmount Error!!!")
+	return 0
+}
+func GetVestingBalancesByName(acct_name string) []VestingBalances {
+	acct_info := GetAccountInfoByName(acct_name)
+	req := CreateRpcRequest(CALL,
+		[]interface{}{DATABASE_API_ID, `get_vesting_balances`,
+			[]interface{}{acct_info.ID}})
+	balances := &[]VestingBalances{}
+	if resp, err := Client.Send(req); err == nil {
+		if err = resp.GetInterface(balances); err == nil {
+			return *balances
 		}
 	}
 	return nil

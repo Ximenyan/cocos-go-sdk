@@ -61,8 +61,8 @@ func TestGetContract(t *testing.T) {
 	c := GetContract("contract.taiken")
 	t.Log(c)
 }
-func TestQueryToken(t *testing.T) {
 
+func TestQueryToken(t *testing.T) {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{1, `database`,
 			[]interface{}{}})
@@ -76,6 +76,54 @@ func TestQueryToken(t *testing.T) {
 
 func TestLookWorldView(t *testing.T) {
 	res := GetWorldViewInfo("block_chain")
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestQueryBlockHeader(t *testing.T) {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{1, `database`,
+			[]interface{}{}})
+	if _, err := Client.Send(req); err != nil {
+		return
+	}
+	res := GetBlockHeader(5510688)
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestQueryVstBalance(t *testing.T) {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{1, `database`,
+			[]interface{}{}})
+	if _, err := Client.Send(req); err != nil {
+		return
+	}
+	res := GetVestingBalancesByName("ximenyan1111")
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestFillOrderHistory(t *testing.T) {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{1, `history`,
+			[]interface{}{}})
+	if _, err := Client.Send(req); err != nil {
+		return
+	}
+	res := GetFillOrderHistory("1.3.0", "1.3.1", 10)
+	byte_s, _ := json.Marshal(res)
+	t.Log(string(byte_s))
+}
+
+func TestMarketHistory(t *testing.T) {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{1, `history`,
+			[]interface{}{}})
+	if _, err := Client.Send(req); err != nil {
+		return
+	}
+	res := GetMarketHistory("1.3.0", "1.3.1", "2019-10-10T06:56:11", "2019-10-12T06:56:11", 86400)
 	byte_s, _ := json.Marshal(res)
 	t.Log(string(byte_s))
 }

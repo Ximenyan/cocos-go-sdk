@@ -4,6 +4,7 @@ import (
 	"cocos-go-sdk/rpc"
 	. "cocos-go-sdk/type"
 	"cocos-go-sdk/wallet"
+	"fmt"
 	"math"
 )
 
@@ -214,9 +215,7 @@ func UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision
 		AssetToUpdate:  ObjectId(update_asset_info.ID),
 		NewOptionsData: cm_op,
 	}
-	rpc.GetRequireFeeData(9, AssetData)
-	st := wallet.CreateSignTransaction(9, Wallet.Default.GetActiveKey(), AssetData)
-	return rpc.BroadcastTransaction(st)
+	return Wallet.SignAndSendTX(OP_UPDATE_TOKEN, AssetData)
 }
 
 /*销毁 token*/
@@ -233,9 +232,7 @@ func ReserveToken(symbol string, amount float64) error {
 		AmountToReserve: Amount{Amount: uint64(float64(amount) * precision), AssetID: ObjectId(asset_info.ID)},
 		Fee:             EmptyFee(),
 	}
-	rpc.GetRequireFeeData(14, AssetData)
-	st := wallet.CreateSignTransaction(14, Wallet.Default.GetActiveKey(), AssetData)
-	return rpc.BroadcastTransaction(st)
+	return Wallet.SignAndSendTX(OP_RESERVE_TOKEN, AssetData)
 }
 
 /*创建 token*/
@@ -272,9 +269,6 @@ func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 func ClaimFees(symbol string, value float64) error {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
 	precision := math.Pow10(asset_info.Precision)
-	if Wallet.Default.Info == nil {
-		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
-	}
 	ctf := &ClaimTokenFees{
 		Extensions:    []interface{}{},
 		Issuer:        ObjectId(Wallet.Default.Info.ID),
@@ -282,6 +276,64 @@ func ClaimFees(symbol string, value float64) error {
 		Fee:           EmptyFee(),
 	}
 	return Wallet.SignAndSendTX(OP_CLAIM_FEES, ctf)
+}
+
+/*注资手续费池*/
+func TokenFundFeePool(symbol string, amount float64) error {
+	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	feePool := &TokenFeePoolData{
+		AssetID:     ObjectId(asset_info.ID),
+		Fee:         EmptyFee(),
+		FromAccount: ObjectId(Wallet.Default.Info.ID),
+		Amount:      uint64(float64(amount) * precision),
+		Extensions:  []interface{}{},
+	}
+	return Wallet.SignAndSendTX(OP_FUND_FEEPOOL, feePool)
+}
+func CreateVestingBalance(symbol string, amount float64) error {
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
+	p := Policy{
+		ID:             1,
+		StartClaim:     GetExpiration(),
+		VestingSeconds: 0,
+	}
+	v := &VestingBalanceCreate{
+		Fee:     EmptyFee(),
+		Owner:   ObjectId(Wallet.Default.Info.ID),
+		Amount:  Amount{Amount: uint64(amount * precision), AssetID: asset_info.ID},
+		Policy:  p,
+		Creator: ObjectId(Wallet.Default.Info.ID),
+	}
+	fmt.Println(v)
+	return Wallet.SignAndSendTX(OP_VESTING_CREATE, v)
+}
+func WithdrawVestingBalance(balance_id string) error {
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	balances := GetVestingBalances(Wallet.Default.Name)
+	var balance_info rpc.VestingBalances
+	for _, balance := range balances {
+		if balance.ID == balance_id {
+			balance_info = balance
+			break
+		}
+	}
+	v := &VestingBalanceWithdraw{
+		Fee:            EmptyFee(),
+		VestingBalance: ObjectId(balance_id),
+		Owner:          ObjectId(Wallet.Default.Info.ID),
+		Amount:         Amount{AssetID: ObjectId(balance_info.Balance.AssetID), Amount: balance_info.GetBalanceAmount()},
+	}
+	return Wallet.SignAndSendTX(OP_VESTING_WITHDRAW, v)
 }
 
 /*发币*/
@@ -299,9 +351,7 @@ func IssueToken(symbol, issue_to_account string, amount float64) error {
 		IssueToAccount: ObjectId(to_info.ID),
 		AssetToIssue:   Amount{Amount: uint64(amount * precision), AssetID: ObjectId(asset_info.ID)},
 	}
-	rpc.GetRequireFeeData(13, issue)
-	st := wallet.CreateSignTransaction(13, Wallet.Default.GetActiveKey(), issue)
-	return rpc.BroadcastTransaction(st)
+	return Wallet.SignAndSendTX(OP_ISSUE_TOKEN, issue)
 }
 
 /*查询订单信息*/
@@ -343,4 +393,34 @@ func GetAllProposals(acct_id string) *[]rpc.Proposal {
 /*查询 某条提议*/
 func GetAllProposal(proposal_id string) *[]rpc.Proposal {
 	return rpc.GetProposals(proposal_id)
+}
+
+/*通过Symbol查询token信息*/
+func GetTokenInfoBySymbol(symbol string) *rpc.TokenInfo {
+	return rpc.GetTokenInfoBySymbol(symbol)
+}
+
+/*通过id查询token信息*/
+func GetTokenInfoById(id string) *rpc.TokenInfo {
+	return rpc.GetTokenInfo(id)
+}
+
+/*查询账户待提取的奖励*/
+func GetVestingBalances(acct_name string) []rpc.VestingBalances {
+	return rpc.GetVestingBalancesByName(acct_name)
+}
+
+/*查询账户操作记录*/
+func GetAccountHistorys(acct_name string) []interface{} {
+	return rpc.GetAccountHistory(acct_name)
+}
+
+/*获取市场限价单交易历史*/
+func GetFillOrderHistory(asset_id, _asset_id string, limit uint64) []interface{} {
+	return rpc.GetFillOrderHistory(asset_id, _asset_id, limit)
+}
+
+/*查询某个时间段的交易市场行情。*/
+func GetMarketHistory(asset_id, _asset_id, start, end string, limit uint64) []interface{} {
+	return rpc.GetMarketHistory(asset_id, _asset_id, start, end, limit)
 }

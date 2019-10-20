@@ -45,7 +45,7 @@ func InitChain() {
 	Network_broadcast()
 	Propertie := GetChainProperties()
 	if Propertie == nil {
-		log.Fatalln("Get Chain Properties Error!!!")
+		log.Panic("Get Chain Properties Error!!!")
 	}
 	CocosBCXChain = &Chain{
 		Properties: Propertie,

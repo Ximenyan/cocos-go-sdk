@@ -645,7 +645,6 @@ func (o ReserveTokenData) GetBytes() []byte {
 	return byte_s
 }
 
-/**/
 type ClaimTokenFees struct {
 	Fee
 	Issuer        ObjectId   `json:"issuer"`
@@ -658,6 +657,23 @@ func (o ClaimTokenFees) GetBytes() []byte {
 		append(o.Issuer.GetBytes(),
 			append(o.AmountToClaim.GetBytes(),
 				o.Extensions.GetBytes()...)...)...)
+	return byte_s
+}
+
+type TokenFeePoolData struct {
+	AssetID ObjectId `json:"asset_id"`
+	Fee
+	FromAccount ObjectId   `json:"from_account"`
+	Extensions  Extensions `json:"extensions"`
+	Amount      uint64     `json:"amount"`
+}
+
+func (o TokenFeePoolData) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.FromAccount.GetBytes(),
+			append(o.AssetID.GetBytes(),
+				append(common.VarUint(o.Amount, 64),
+					o.Extensions.GetBytes()...)...)...)...)
 	return byte_s
 }
 
@@ -751,5 +767,60 @@ func (o UpdateContractData) GetBytes() []byte {
 		append(reviser_data,
 			append(contract_id_data,
 				append(data_data, extensions_data...)...)...)...)
+	return byte_s
+}
+
+type Int uint64
+
+func (o Int) GetBytes() []byte {
+	return common.Varint(uint64(o))
+}
+
+type Policy struct {
+	ID             uint64
+	StartClaim     Expiration
+	VestingSeconds uint64
+}
+
+func (o Policy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`[%d,{"start_claim":"%s","vesting_seconds":%d}]`, o.ID, o.StartClaim, o.VestingSeconds)), nil
+}
+
+func (o Policy) GetBytes() []byte {
+	byte_s := append(common.Varint(o.ID),
+		append(o.StartClaim.GetBytes(),
+			common.VarUint(o.VestingSeconds, 32)...)...)
+	return byte_s
+}
+
+type VestingBalanceCreate struct {
+	Policy Policy   `json:"policy"`
+	Owner  ObjectId `json:"owner"`
+	Amount Amount   `json:"amount"`
+	Fee
+	Creator ObjectId `json:"creator"`
+}
+
+func (o VestingBalanceCreate) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.Creator.GetBytes(),
+			append(o.Owner.GetBytes(),
+				append(o.Amount.GetBytes(),
+					o.Policy.GetBytes()...)...)...)...)
+	return byte_s
+}
+
+type VestingBalanceWithdraw struct {
+	Fee
+	Owner          ObjectId `json:"owner"`
+	Amount         Amount   `json:"amount"`
+	VestingBalance ObjectId `json:"vesting_balance"`
+}
+
+func (o VestingBalanceWithdraw) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.VestingBalance.GetBytes(),
+			append(o.Owner.GetBytes(),
+				o.Amount.GetBytes()...)...)...)
 	return byte_s
 }

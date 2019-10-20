@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	. "cocos-go-sdk/type"
 	"encoding/json"
 	"log"
 )
@@ -185,9 +186,8 @@ func GetAccountInfoByName(name string) *AccountInfo {
 
 func BroadcastTransaction(tx interface{}) error {
 	req := CreateRpcRequest(CALL,
-		[]interface{}{4, `broadcast_transaction`,
+		[]interface{}{BROADCAST_API_ID, `broadcast_transaction`,
 			[]interface{}{tx}})
-	log.Println("transaction>>>>>", req.ToString())
 	if resp, err := Client.Send(req); err == nil {
 		txId := ""
 		if err = resp.GetInterface(&txId); err == nil {

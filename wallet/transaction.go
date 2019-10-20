@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value uint64, memo string) *Transaction {
+func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value float64, memo string) *Transaction {
 	to_info := rpc.GetAccountInfoByName(to_name)
 	to_puk := to_info.GetActivePuKey()
 	from_info := rpc.GetAccountInfoByName(from_name)
