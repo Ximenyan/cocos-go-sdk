@@ -40,20 +40,26 @@ func main() {
 参数：file_path 钱包路径
 ```
 
-#### 设置账户
+#### 设置默认账户
 
 ```
 方法：sdk.Wallet.SetDefaultAccount(name, password string) error
 参数：name     账户名
       password 账户密码
 ```
+
 #### 导入私钥
 
 ```
 方法：sdk.Wallet.AddAccountByPrivateKey(prkWif， password ) error
 参数：prkWif   私钥
       password 密码
- 
+```
+#### 删除账户
+
+```
+方法：sdk.Wallet.DeleteAccountByName(name ...string) (err error)
+参数：name   账户名
 ```
 #### 创建账户
 
@@ -108,10 +114,45 @@ func main() {
 	issue_to_account    接受Token的账户
 	amount	            发行数量
 ```
+#### Toke更新
+```
+方法：sdk.UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision, amount, _amount uint64) error 
+参数：
+    new_issuer 新发行人
+	symbol   token简写
+	asset    基准资产ID
+	_asset	 标价资产ID
+	max_supplay 最大发行量
+	precision   精度
+	amount   基准资产数量
+	_amount  标价资产数量
+	
+```
 
+#### Token销毁
+```
+方法：sdk.ReserveToken(symbol,  amount float64) error
+参数：
+	symbol              token简写
+	amount	            销毁数量
+```
+#### 注资手续费池
+```
+方法：sdk.TokenFundFeePool(symbol string, amount float64) error
+参数：
+	symbol              token简写
+	amount	            注资金额
+```
+#### 领取累计的手续费
+```
+方法：sdk.ClaimFees(symbol string, value float64) error
+参数：
+	symbol              token简写
+	value	            提取数量
+```
 #### Token转账
 ```
-方法：sdk.Wallet.Transfer(to, symbol, memo string, value uint64) error
+方法：sdk.Wallet.Transfer(to, symbol, memo string, value float64) error
 参数：
 参数：
 	symbol              token简写
@@ -119,15 +160,38 @@ func main() {
 	value	            发行数量
 	memo		    备注
 ```
+#### 创建Vesting Balance
+```
+方法：sdk.CreateVestingBalance(symbol string, amount float64) error
+参数：
+	symbol              token简写
+	amount	            质押数量
+```
+#### 领取Vesting奖励
+```
+方法：sdk.WithdrawVestingBalance(balance_id string) error
+参数：
+	balance_id              Vesting Balance Id
+```
 
 #### 创建世界观
 ```
 方法：sdk.CreateWorldView(name string) error 
 参数：
-参数：
 	name              世界观名称
 ```
-
+#### 提议关联世界观
+```
+方法：sdk.RelateWorldView(world_view string) error
+参数：
+	world_view              世界观名称
+```
+#### 批准关联世界观的提议
+```
+方法：sdk.ApprovalsProposal(proposal_id string) error
+参数：
+	proposal_id              提议的ID
+```
 #### 创建NH资产
 ```
 方法：sdk.CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) error
@@ -291,3 +355,59 @@ func main() {
 ```
 方法： GetAccountBalances(acc_name string) *[]rpc.Balance
 ```
+#### 查询链上所有token信息
+
+```
+方法： sdk.GetAllTokenInfo() []*rpc.TokenInfo
+```
+
+
+#### 查询收到的所有提议
+
+```
+方法： sdk.GetAllProposals(acct_id string) *[]rpc.Proposal
+```
+
+#### 查询 某条提议
+```
+方法： sdk.GetAllProposal(proposal_id string) *[]rpc.Proposal
+```
+
+#### 通过Symbol查询token信息
+```
+方法： sdk.GetTokenInfoBySymbol(symbol string) *rpc.TokenInfo 
+```
+
+#### 通过id查询token信息
+```
+方法： sdk.GetTokenInfoById(id string) *rpc.TokenInfo 
+```
+
+#### 查询BlockHeader
+```
+方法： sdk.GetBlockHeader(block_hight int) *rpc.BlockHeader
+```
+
+#### 查询Contract
+```
+方法： sdk.GetContract(contract_name string) *rpc.Contract
+```
+#### 查询账户待提取的奖励
+```
+方法： sdk.GetVestingBalances(acct_name string) []rpc.VestingBalances
+```
+#### 查询账户操作记录
+```
+方法： sdk.GetAccountHistorys(acct_name string) []interface{} 
+```
+
+#### 获取市场限价单交易历史
+```
+方法： sdk.GetFillOrderHistory(asset_id, _asset_id string, limit uint64) []interface{}
+```
+
+#### 查询某个时间段的交易市场行情
+```
+方法： sdk.GetMarketHistory(asset_id, _asset_id, start, end string, limit uint64) []interface{}
+```
+

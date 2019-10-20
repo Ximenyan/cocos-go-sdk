@@ -18,6 +18,11 @@ var Chain *chain.Chain
 func InitSDK(host string, port int, use_ssl bool) {
 	once.Do(
 		func() {
+			defer func() {
+				if err := recover(); err != nil {
+					log.Panicln("SDK Init Error:", err)
+				}
+			}()
 			if err := rpc.InitClient(host, port, use_ssl); err != nil {
 				log.Panicln("SDK Init Error:", err)
 			}

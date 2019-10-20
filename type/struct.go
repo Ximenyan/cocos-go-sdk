@@ -3,6 +3,7 @@ package types
 import (
 	"cocos-go-sdk/common"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"time"
@@ -116,6 +117,113 @@ func (o WorldView) GetBytes() []byte {
 	wv_data := o.WorldView.GetBytes()
 	byte_s := append(fee_data,
 		append(fpa_data, wv_data...)...)
+	return byte_s
+}
+
+type ProposedOps struct {
+	Fee
+	RelatedAccount ObjectId `json:"related_account"`
+	WorldView      String   `json:"world_view"`
+	ViewOwner      ObjectId `json:"view_owner"`
+}
+
+func (o ProposedOps) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	ra_data := o.RelatedAccount.GetBytes()
+	wv_data := o.WorldView.GetBytes()
+	owner_data := o.ViewOwner.GetBytes()
+	byte_s := append(fee_data,
+		append(ra_data,
+			append(wv_data, owner_data...)...)...)
+	return byte_s
+}
+
+type OPS struct {
+	ID  uint64
+	Ops Object
+}
+
+func (o OPS) GetBytes() []byte {
+	byte_s := append(
+		common.Varint(o.ID), o.Ops.GetBytes()...)
+	return byte_s
+}
+
+func (o OPS) MarshalJSON() ([]byte, error) {
+	byte_s, _ := json.Marshal(o.Ops)
+	return []byte(fmt.Sprintf(`{"op":[%d,%s]}`, o.ID, string(byte_s))), nil
+}
+
+type RelatedWorldView struct {
+	Fee
+	FeePayingAccount    ObjectId    `json:"fee_paying_account"`
+	ExpirationTime      Expiration  `json:"expiration_time"`
+	ProposedOps         []OPS       `json:"proposed_ops"`
+	ReviewPeriodSeconds interface{} `json:"review_period_seconds,omitempty"`
+	Extensions          Extensions  `json:"extensions"`
+}
+
+func (o RelatedWorldView) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	fpa_data := o.FeePayingAccount.GetBytes()
+	exp_data := o.ExpirationTime.GetBytes()
+	p_ops_data := common.Varint(uint64(len(o.ProposedOps)))
+	for i := 0; i < len(o.ProposedOps); i++ {
+		p_ops_data = append(p_ops_data, o.ProposedOps[i].GetBytes()...)
+	}
+	rps_data := []byte{0x0}
+	ext_data := o.Extensions.GetBytes()
+	byte_s := append(fee_data,
+		append(fpa_data,
+			append(exp_data,
+				append(p_ops_data,
+					append(rps_data, ext_data...)...)...)...)...)
+	return byte_s
+}
+
+type Array []Object
+
+func (o Array) GetBytes() []byte {
+	byte_s := common.Varint(uint64(len(o)))
+	for i := 0; i < len(o); i++ {
+		byte_s = append(byte_s, o[i].GetBytes()...)
+	}
+	return byte_s
+}
+
+type Approvals struct {
+	Fee
+	FeePayingAccount        ObjectId   `json:"fee_paying_account"`
+	Proposal                ObjectId   `json:"proposal"`
+	ActiveApprovalsToAdd    Array      `json:"active_approvals_to_add"`
+	ActiveApprovalsToRemove Array      `json:"active_approvals_to_remove"`
+	OwnerApprovalsToAdd     Array      `json:"owner_approvals_to_add"`
+	OwnerApprovalsToRemove  Array      `json:"owner_approvals_to_remove"`
+	KeyApprovalsToAdd       Array      `json:"key_approvals_to_add"`
+	KeyApprovalsToRemove    Array      `json:"key_approvals_to_remove"`
+	Extensions              Extensions `json:"extensions"`
+}
+
+func (o Approvals) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	fpa_data := o.FeePayingAccount.GetBytes()
+	proposal_data := o.Proposal.GetBytes()
+	active_add_data := o.ActiveApprovalsToAdd.GetBytes()
+	active_remove_data := o.ActiveApprovalsToRemove.GetBytes()
+	owner_add_data := o.OwnerApprovalsToAdd.GetBytes()
+	owner_remove_data := o.OwnerApprovalsToRemove.GetBytes()
+	key_add_data := o.KeyApprovalsToAdd.GetBytes()
+	key_remove_data := o.KeyApprovalsToRemove.GetBytes()
+	extensions_data := o.Extensions.GetBytes()
+	byte_s := append(fee_data,
+		append(fpa_data,
+			append(proposal_data,
+				append(active_add_data,
+					append(active_remove_data,
+						append(owner_add_data,
+							append(owner_remove_data,
+								append(key_add_data,
+									append(key_remove_data, extensions_data...)...)...)...)...)...)...)...)...)
 	return byte_s
 }
 
@@ -285,7 +393,6 @@ func (o UpgradeAccount) GetBytes() []byte {
 	byte_s := append(fee_data,
 		append(atu_data,
 			append(utlm_data, extensions_data...)...)...)
-	//fmt.Println("op byte len:::", len(byte_s))
 	return byte_s
 }
 
@@ -308,8 +415,6 @@ func (o KeyInfo) GetBytes() []byte {
 	byte_s := append(wt_data,
 		append(aa_data,
 			append(ka_data, extensions_data...)...)...)
-	////fmt.Println("key_info_len", len(byte_s))
-	////fmt.Println("key_info:::", byte_s)
 	return byte_s
 }
 
@@ -334,8 +439,6 @@ func (o Options) GetBytes() []byte {
 			append(nw_data,
 				append(nc_data,
 					append(votes_data, extensions_data...)...)...)...)...)
-	////fmt.Println("Options_len", len(byte_s))
-	////fmt.Println("Options:::", byte_s)
 	return byte_s
 }
 
@@ -422,7 +525,6 @@ type CoreExchangeRate struct {
 
 func (o CoreExchangeRate) GetBytes() []byte {
 	byte_s := append(o.Base.GetBytes(), o.Quote.GetBytes()...)
-	fmt.Println("CoreExchangeRate len:::", len(byte_s))
 	return byte_s
 }
 
@@ -453,7 +555,6 @@ func (o CommonOptions) GetBytes() []byte {
 					append(Flags_data,
 						append(CoreExchangeRate_data,
 							append(des_data, extensions_data...)...)...)...)...)...)...)
-	//fmt.Println("CommonOptions byte len:::", len(byte_s))
 	return byte_s
 }
 
@@ -481,7 +582,31 @@ func (o CreateAssetData) GetBytes() []byte {
 				append(precision_data,
 					append(cod_data,
 						append(bo_data, extensions_data...)...)...)...)...)...)
-	//fmt.Println("CreateAssetData byte len:::", len(byte_s))
+	return byte_s
+}
+
+/*创建代币的数据结构*/
+type UpdateAssetData struct {
+	Fee
+	AssetToUpdate  ObjectId      `json:"asset_to_update"`
+	Issuer         ObjectId      `json:"issuer"`
+	NewIssuer      ObjectId      `json:"new_issuer"`
+	NewOptionsData CommonOptions `json:"new_options"`
+	Extensions     Extensions    `json:"extensions"`
+}
+
+func (o UpdateAssetData) GetBytes() []byte {
+	fee_data := o.FeeData.GetBytes()
+	issuer_data := o.Issuer.GetBytes()
+	new_issuer_data := o.NewIssuer.GetBytes()
+	asset_data := o.AssetToUpdate.GetBytes()
+	cod_data := o.NewOptionsData.GetBytes()
+	extensions_data := o.Extensions.GetBytes()
+	byte_s := append(fee_data,
+		append(issuer_data,
+			append(new_issuer_data,
+				append(asset_data,
+					append(cod_data, extensions_data...)...)...)...)...)
 	return byte_s
 }
 
@@ -501,7 +626,53 @@ func (o IssueAsset) GetBytes() []byte {
 				append(o.IssueToAccount.GetBytes(),
 					append([]byte{0x0},
 						o.Extensions.GetBytes()...)...)...)...)...)
-	fmt.Println("IssueAsset len:::", len(byte_s))
+	return byte_s
+}
+
+type ReserveTokenData struct {
+	Extensions      Extensions `json:"extensions"`
+	Payer           ObjectId   `json:"payer"`
+	AmountToReserve Amount     `json:"amount_to_reserve"`
+	Fee
+}
+
+func (o ReserveTokenData) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.Payer.GetBytes(),
+			append(o.AmountToReserve.GetBytes(),
+				o.Extensions.GetBytes()...)...)...)
+	return byte_s
+}
+
+type ClaimTokenFees struct {
+	Fee
+	Issuer        ObjectId   `json:"issuer"`
+	AmountToClaim Amount     `json:"amount_to_claim"`
+	Extensions    Extensions `json:"extensions"`
+}
+
+func (o ClaimTokenFees) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.Issuer.GetBytes(),
+			append(o.AmountToClaim.GetBytes(),
+				o.Extensions.GetBytes()...)...)...)
+	return byte_s
+}
+
+type TokenFeePoolData struct {
+	AssetID ObjectId `json:"asset_id"`
+	Fee
+	FromAccount ObjectId   `json:"from_account"`
+	Extensions  Extensions `json:"extensions"`
+	Amount      uint64     `json:"amount"`
+}
+
+func (o TokenFeePoolData) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.FromAccount.GetBytes(),
+			append(o.AssetID.GetBytes(),
+				append(common.VarUint(o.Amount, 64),
+					o.Extensions.GetBytes()...)...)...)...)
 	return byte_s
 }
 
@@ -595,5 +766,60 @@ func (o UpdateContractData) GetBytes() []byte {
 		append(reviser_data,
 			append(contract_id_data,
 				append(data_data, extensions_data...)...)...)...)
+	return byte_s
+}
+
+type Int uint64
+
+func (o Int) GetBytes() []byte {
+	return common.Varint(uint64(o))
+}
+
+type Policy struct {
+	ID             uint64
+	StartClaim     Expiration
+	VestingSeconds uint64
+}
+
+func (o Policy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`[%d,{"start_claim":"%s","vesting_seconds":%d}]`, o.ID, o.StartClaim, o.VestingSeconds)), nil
+}
+
+func (o Policy) GetBytes() []byte {
+	byte_s := append(common.Varint(o.ID),
+		append(o.StartClaim.GetBytes(),
+			common.VarUint(o.VestingSeconds, 32)...)...)
+	return byte_s
+}
+
+type VestingBalanceCreate struct {
+	Policy Policy   `json:"policy"`
+	Owner  ObjectId `json:"owner"`
+	Amount Amount   `json:"amount"`
+	Fee
+	Creator ObjectId `json:"creator"`
+}
+
+func (o VestingBalanceCreate) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.Creator.GetBytes(),
+			append(o.Owner.GetBytes(),
+				append(o.Amount.GetBytes(),
+					o.Policy.GetBytes()...)...)...)...)
+	return byte_s
+}
+
+type VestingBalanceWithdraw struct {
+	Fee
+	Owner          ObjectId `json:"owner"`
+	Amount         Amount   `json:"amount"`
+	VestingBalance ObjectId `json:"vesting_balance"`
+}
+
+func (o VestingBalanceWithdraw) GetBytes() []byte {
+	byte_s := append(o.FeeData.GetBytes(),
+		append(o.VestingBalance.GetBytes(),
+			append(o.Owner.GetBytes(),
+				o.Amount.GetBytes()...)...)...)
 	return byte_s
 }

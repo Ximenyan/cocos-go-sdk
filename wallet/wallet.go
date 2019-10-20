@@ -114,6 +114,22 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 	return
 }
 
+//删除账户
+func (w *Wallet) DeleteAccountByName(name ...string) (err error) {
+	w.Lock()
+	defer w.Unlock()
+	for _, n := range name {
+		if w.Default != nil && n == w.Default.Name {
+			w.Default = nil
+		}
+		if _, s := w.Accounts[n]; s {
+			delete(w.Accounts, n)
+		}
+	}
+	w.save()
+	return
+}
+
 //创建账户
 func (w *Wallet) CreateAccount(name string, password string) (err error) {
 	w.Lock()
@@ -183,7 +199,7 @@ func (w *Wallet) IsEmpty() bool {
 }
 
 //Transfer
-func (w *Wallet) Transfer(to, symbol, memo string, value uint64) error {
+func (w *Wallet) Transfer(to, symbol, memo string, value float64) error {
 	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo)
 	rpc.GetRequireFeeData(0, t)
 	st := CreateSignTransaction(0, w.Default.GetActiveKey(), t)
@@ -227,7 +243,11 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 	}
 	return errors.New("no account name:" + name)
 }
-
+func (w *Wallet) SignAndSendTX(opID int, t OpData) error {
+	rpc.GetRequireFeeData(opID, t)
+	st := CreateSignTransaction(opID, w.Default.GetActiveKey(), t)
+	return rpc.BroadcastTransaction(st)
+}
 func (w *Wallet) CreateKey() PrivateKey {
 	return CreatePrivateKey()
 }
