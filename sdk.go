@@ -1,4 +1,4 @@
-package CocosSDK
+package CocosSDK // import "cocos-go-sdk"
 
 import (
 	"cocos-go-sdk/chain"

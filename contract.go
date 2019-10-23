@@ -61,7 +61,7 @@ func CreateContractByFile(c_name, c_auth, path string) error {
 }
 
 /*调用合约*/
-func Invoke(contract_name, func_name string, args ...interface{}) error {
+func InvokeContract(contract_name, func_name string, args ...interface{}) error {
 	contract_info := GetContract(contract_name)
 	value_list := CreateValueList(args)
 	if Wallet.Default.Info == nil {

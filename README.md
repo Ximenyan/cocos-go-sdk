@@ -298,7 +298,7 @@ func main() {
 #### 合约调用
 
 ```
-方法：sdk.Invoke(contract_name, func_name string, args ...interface{})
+方法：sdk.InvokeContract(contract_name, func_name string, args ...interface{})
 参数：
 参数：
 	contract_name ： 合约名

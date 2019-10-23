@@ -1,11 +1,12 @@
-package chain
+package chain // import "cocos-go-sdk/chain"
 
 import (
-	"cocos-go-sdk/common"
-	"cocos-go-sdk/rpc"
 	"encoding/hex"
 	"log"
 	"math/big"
+
+	"cocos-go-sdk/common"
+	"cocos-go-sdk/rpc"
 )
 
 type ChainProperties struct {
