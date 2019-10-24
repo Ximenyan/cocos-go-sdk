@@ -28,6 +28,8 @@ const (
 	OP_REVISE_CONTRACT  = 59
 )
 
+var EMPTY_ID ObjectId = ""
+
 func EmptyFee() Fee {
 	A := Fee{FeeData: Amount{Amount: 0, AssetID: COCOS_ID}}
 	return A

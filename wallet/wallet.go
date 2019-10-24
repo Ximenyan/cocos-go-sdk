@@ -137,7 +137,7 @@ func (w *Wallet) CreateAccount(name string, password string) (err error) {
 	if w.Default.Info == nil {
 		w.Default.Info = rpc.GetAccountInfoByName(w.Default.Name)
 	}
-	w.Accounts[name] = CreateAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID) //append(w.Accounts, CreateAccount(name, password))
+	w.Accounts[name] = CreateAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID)
 	w.save()
 	return
 }
@@ -218,9 +218,9 @@ func (w *Wallet) UpgradeAccount(name string) error {
 func (w *Wallet) RegisterNhAssetCreator(name string) error {
 	info := rpc.GetAccountInfoByName(name)
 	t := &NhAssetCreator{
+		Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(info.ID),
 	}
-	t.FeeData = Amount{Amount: 0, AssetID: "1.3.0"}
 	rpc.GetRequireFeeData(46, t)
 	st := CreateSignTransaction(46, w.Default.GetActiveKey(), t)
 	return rpc.BroadcastTransaction(st)

@@ -197,6 +197,7 @@ func UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
+	precision = uint64(math.Pow10(int(precision)))
 	cm_op := CommonOptions{
 		MaxSupply:            max_supply * precision,
 		MarketFeePercent:     0,
@@ -210,7 +211,7 @@ func UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision
 	AssetData := &UpdateAssetData{
 		Fee:            EmptyFee(),
 		Extensions:     []interface{}{},
-		NewIssuer:      ObjectId(new_issuer_info.ID),
+		NewIssuer:      Optional(new_issuer_info.ID),
 		Issuer:         ObjectId(Wallet.Default.Info.ID),
 		AssetToUpdate:  ObjectId(update_asset_info.ID),
 		NewOptionsData: cm_op,
@@ -243,6 +244,7 @@ func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
+	precision = uint64(math.Pow10(int(precision)))
 	cm_op := CommonOptions{
 		MaxSupply:            max_supply * precision,
 		MarketFeePercent:     0,

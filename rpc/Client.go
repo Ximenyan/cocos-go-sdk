@@ -115,6 +115,8 @@ func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 		ch := make(chan *RpcResp)
 		c.Handler.Store(strconv.Itoa(int(reqData.Id)), func(r *RpcResp) error {
 			ch <- r
+			byte_s, _ := json.Marshal(r)
+			log.Println("rpc Send end:::", string(byte_s))
 			return nil
 		})
 		select {

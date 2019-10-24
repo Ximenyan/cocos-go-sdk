@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"time"
 	"strconv"
 	"strings"
+	"time"
 
 	"cocos-go-sdk/crypto/base58-go"
 )
@@ -30,6 +30,16 @@ func (o ObjectId) GetBytes() []byte {
 	num := strings.Split(string(o), `.`)[2]
 	i, _ := strconv.ParseUint(num, 10, 64)
 	return common.Varint(i)
+}
+
+type Optional ObjectId
+
+func (o Optional) GetBytes() []byte {
+	if ObjectId(o) == EMPTY_ID {
+		return []byte{0x0}
+	} else {
+		return append([]byte{0x1}, ObjectId(o).GetBytes()...)
+	}
 }
 
 type Expiration string
@@ -590,7 +600,7 @@ type UpdateAssetData struct {
 	Fee
 	AssetToUpdate  ObjectId      `json:"asset_to_update"`
 	Issuer         ObjectId      `json:"issuer"`
-	NewIssuer      ObjectId      `json:"new_issuer"`
+	NewIssuer      Optional      `json:"new_issuer"`
 	NewOptionsData CommonOptions `json:"new_options"`
 	Extensions     Extensions    `json:"extensions"`
 }
@@ -604,8 +614,8 @@ func (o UpdateAssetData) GetBytes() []byte {
 	extensions_data := o.Extensions.GetBytes()
 	byte_s := append(fee_data,
 		append(issuer_data,
-			append(new_issuer_data,
-				append(asset_data,
+			append(asset_data,
+				append(new_issuer_data,
 					append(cod_data, extensions_data...)...)...)...)...)
 	return byte_s
 }
