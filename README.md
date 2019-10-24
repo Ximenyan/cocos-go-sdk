@@ -25,7 +25,7 @@ func main() {
 }
 
 ```
-[简单DEMO:https://github.com/Ximenyan/cocos-go-sdk](https://github.com/Ximenyan/cocos-go-sdk)
+[简单DEMO:CocosGoSdkDemo](https://github.com/Ximenyan/CocosGoSdkDemo)
 ## API接口
 - [钱包相关API](#钱包相关API)
 - [账户相关API](#账户相关API)
