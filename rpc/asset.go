@@ -3,7 +3,6 @@ package rpc
 import (
 	. "cocos-go-sdk/type"
 	"encoding/json"
-	"math/big"
 )
 
 type NhAssetOrderInfo struct {
@@ -16,8 +15,8 @@ type NhAssetOrderInfo struct {
 	BaseDescribe   string `json:"base_describe"`
 	NhHash         string `json:"nh_hash"`
 	Price          struct {
-		Amount  *big.Int `json:"amount"`
-		AssetID string   `json:"asset_id"`
+		Amount  BigInt `json:"amount"`
+		AssetID string `json:"asset_id"`
 	} `json:"price"`
 	Memo       string `json:"memo"`
 	Expiration string `json:"expiration"`

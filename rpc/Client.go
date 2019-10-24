@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	. "cocos-go-sdk/type"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -110,13 +111,10 @@ func (c *RpcClient) SendWithHandler(reqData *RpcRequest, f func(r *RpcResp) erro
 func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 	ret = &RpcResp{}
 	reqJson := reqData.ToString()
-	log.Println("rpc Send start:::", reqJson)
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
 		ch := make(chan *RpcResp)
 		c.Handler.Store(strconv.Itoa(int(reqData.Id)), func(r *RpcResp) error {
 			ch <- r
-			byte_s, _ := json.Marshal(r)
-			log.Println("rpc Send end:::", string(byte_s))
 			return nil
 		})
 		select {

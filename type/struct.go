@@ -21,6 +21,14 @@ func PukBytesFromBase58String(base58Str string) []byte {
 	return puk
 }
 
+type BigInt struct {
+	big.Int
+}
+
+func (i *BigInt) UnmarshalJSON(data []byte) {
+	i.SetBytes(data)
+}
+
 type Object interface {
 	GetBytes() []byte
 }
@@ -371,7 +379,6 @@ func (o CancelOrder) GetBytes() []byte {
 	byte_s := append(fee_data,
 		append(order_data,
 			append(fpa_data, extensions_data...)...)...)
-	fmt.Println("CancelOrder::", len(byte_s))
 	return byte_s
 }
 
@@ -600,7 +607,7 @@ type UpdateAssetData struct {
 	Fee
 	AssetToUpdate  ObjectId      `json:"asset_to_update"`
 	Issuer         ObjectId      `json:"issuer"`
-	NewIssuer      Optional      `json:"new_issuer"`
+	NewIssuer      Optional      `json:"new_issuer,omitempty"`
 	NewOptionsData CommonOptions `json:"new_options"`
 	Extensions     Extensions    `json:"extensions"`
 }

@@ -4,7 +4,6 @@ import (
 	"cocos-go-sdk/rpc"
 	. "cocos-go-sdk/type"
 	"cocos-go-sdk/wallet"
-	"fmt"
 	"math"
 )
 
@@ -189,11 +188,12 @@ func CreateWorldView(name string) error {
 }
 
 /*更新 token*/
-func UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision, amount, _amount uint64) error {
+func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64, new_issuer ...string) error {
+
 	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
 	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
-	new_issuer_info := rpc.GetAccountInfoByName(new_issuer)
+
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -208,10 +208,17 @@ func UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision
 		Description:          String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:           []interface{}{},
 	}
+	var newIssuer ObjectId
+	if len(new_issuer) >= 1 {
+		new_issuer_info := rpc.GetAccountInfoByName(new_issuer[0])
+		newIssuer = ObjectId(new_issuer_info.ID)
+	} else {
+		newIssuer = EMPTY_ID
+	}
 	AssetData := &UpdateAssetData{
 		Fee:            EmptyFee(),
 		Extensions:     []interface{}{},
-		NewIssuer:      Optional(new_issuer_info.ID),
+		NewIssuer:      Optional(newIssuer),
 		Issuer:         ObjectId(Wallet.Default.Info.ID),
 		AssetToUpdate:  ObjectId(update_asset_info.ID),
 		NewOptionsData: cm_op,
@@ -316,7 +323,6 @@ func CreateVestingBalance(symbol string, amount float64) error {
 		Policy:  p,
 		Creator: ObjectId(Wallet.Default.Info.ID),
 	}
-	fmt.Println(v)
 	return Wallet.SignAndSendTX(OP_VESTING_CREATE, v)
 }
 

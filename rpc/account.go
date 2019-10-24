@@ -184,6 +184,13 @@ func GetAccountInfoByName(name string) *AccountInfo {
 	return nil
 }
 
+func BroadcastTransactionWithHandler(tx interface{}, handler ...func(r *RpcResp) error) error {
+	req := CreateRpcRequest(CALL,
+		[]interface{}{BROADCAST_API_ID, `broadcast_transaction`,
+			[]interface{}{tx}})
+	return Client.SendWithHandler(req, handler[0])
+}
+
 func BroadcastTransaction(tx interface{}) error {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{BROADCAST_API_ID, `broadcast_transaction`,
