@@ -137,7 +137,16 @@ func (w *Wallet) CreateAccount(name string, password string) (err error) {
 	if w.Default.Info == nil {
 		w.Default.Info = rpc.GetAccountInfoByName(w.Default.Name)
 	}
-	w.Accounts[name] = CreateAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID)
+	w.Accounts[name], err = w.registerAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID)
+	w.save()
+	return
+}
+
+//导入账户
+func (w *Wallet) ImportAccount(name string, password string) (err error) {
+	w.Lock()
+	defer w.Unlock()
+	w.Accounts[name] = CreateAccount(name, password)
 	w.save()
 	return
 }
@@ -201,18 +210,14 @@ func (w *Wallet) IsEmpty() bool {
 //Transfer
 func (w *Wallet) Transfer(to, symbol, memo string, value float64) error {
 	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo)
-	rpc.GetRequireFeeData(0, t)
-	st := CreateSignTransaction(0, w.Default.GetActiveKey(), t)
-	return rpc.BroadcastTransaction(st)
+	return w.SignAndSendTX(OP_TRANSFER, t)
 }
 
 //upgrade_account
 func (w *Wallet) UpgradeAccount(name string) error {
 	info := rpc.GetAccountInfoByName(name)
 	t := CreateUpgradeAccount(name, info.ID)
-	rpc.GetRequireFeeData(7, t)
-	st := CreateSignTransaction(7, w.Default.GetActiveKey(), t)
-	return rpc.BroadcastTransaction(st)
+	return w.SignAndSendTX(OP_UPGRADE_ACCOUNT, t)
 }
 
 func (w *Wallet) RegisterNhAssetCreator(name string) error {
@@ -221,9 +226,9 @@ func (w *Wallet) RegisterNhAssetCreator(name string) error {
 		Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(info.ID),
 	}
-	rpc.GetRequireFeeData(46, t)
-	st := CreateSignTransaction(46, w.Default.GetActiveKey(), t)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(46, t)
+	//st := CreateSignTransaction(46, w.Default.GetActiveKey(), t)
+	return w.SignAndSendTX(OP_NH_CREATOR, t) //rpc.BroadcastTransaction(st)
 }
 
 //SetDefaultAccount
@@ -235,6 +240,8 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 			wif, _ := DecryptKey(w.Accounts[name].KeyPairs[i].EncryptWif, []byte(password))
 			w.Accounts[name].KeyPairs[i].Private_Key = PrkFromWifString(wif)
 			if w.Accounts[name].KeyPairs[i].PubKey != w.Accounts[name].KeyPairs[i].Private_Key.GetPublicKey().ToBase58String() {
+				log.Println(w.Accounts[name].KeyPairs[i].PubKey)
+				log.Println(w.Accounts[name].KeyPairs[i].Private_Key.GetPublicKey().ToBase58String())
 				return errors.New("password error!")
 			}
 		}
@@ -245,9 +252,19 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 }
 func (w *Wallet) SignAndSendTX(opID int, t OpData) error {
 	rpc.GetRequireFeeData(opID, t)
-	st := CreateSignTransaction(opID, w.Default.GetActiveKey(), t)
-	return rpc.BroadcastTransaction(st)
+	if st, err := CreateSignTransaction(opID, w.Default.GetActiveKey(), t); err != nil {
+		return err
+	} else {
+		return rpc.BroadcastTransaction(st)
+	}
 }
 func (w *Wallet) CreateKey() PrivateKey {
 	return CreatePrivateKey()
+}
+
+/*注册賬戶*/
+func (w *Wallet) registerAccount(prk *PrivateKey, name string, password string, registrar string) (*Account, error) {
+	acct := CreateAccount(name, password)
+	c := CreateRegisterData(acct.GetActiveKey().GetPublicKey().ToBase58String(), acct.GetOwnerKey().GetPublicKey().ToBase58String(), name, registrar, registrar)
+	return acct, w.SignAndSendTX(OP_CREATE_ACCOUNT, c)
 }

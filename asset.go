@@ -3,7 +3,6 @@ package CocosSDK
 import (
 	"cocos-go-sdk/rpc"
 	. "cocos-go-sdk/type"
-	"cocos-go-sdk/wallet"
 	"math"
 )
 
@@ -24,9 +23,7 @@ func FillNhAsset(order_id string) error {
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
-	rpc.GetRequireFeeData(54, tx)
-	st := wallet.CreateSignTransaction(54, Wallet.Default.GetActiveKey(), tx)
-	return rpc.BroadcastTransaction(st)
+	return Wallet.SignAndSendTX(OP_FILL_NHORDER, tx)
 }
 
 /*取消 NH 资产卖出单*/
@@ -40,9 +37,9 @@ func CancelNhAssetOrder(order_id string) error {
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
-	rpc.GetRequireFeeData(53, tx)
-	st := wallet.CreateSignTransaction(53, Wallet.Default.GetActiveKey(), tx)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(53, tx)
+	//st := wallet.CreateSignTransaction(53, Wallet.Default.GetActiveKey(), tx)
+	return Wallet.SignAndSendTX(53, tx)
 }
 
 /*NH 资产卖出单*/
@@ -66,9 +63,9 @@ func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price
 		Expiration:       GetExpiration(),
 		Memo:             String(memo),
 	}
-	rpc.GetRequireFeeData(52, tx)
-	st := wallet.CreateSignTransaction(52, Wallet.Default.GetActiveKey(), tx)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(52, tx)
+	//st := wallet.CreateSignTransaction(52, Wallet.Default.GetActiveKey(), tx)
+	return Wallet.SignAndSendTX(52, tx)
 }
 
 /*NH 资产删除*/
@@ -82,9 +79,9 @@ func DeleteNhAsset(asset_id string) error {
 			Fee:              EmptyFee()},
 		NhAsset: ObjectId(asset_id),
 	}
-	rpc.GetRequireFeeData(50, tx)
-	st := wallet.CreateSignTransaction(50, Wallet.Default.GetActiveKey(), tx)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(50, tx)
+	//st := wallet.CreateSignTransaction(50, Wallet.Default.GetActiveKey(), tx)
+	return Wallet.SignAndSendTX(50, tx)
 }
 
 /*NH 资产转账*/
@@ -99,9 +96,9 @@ func TransferNhAsset(to_name, asset_id string) error {
 		From:    ObjectId(Wallet.Default.Info.ID),
 		NhAsset: ObjectId(asset_id),
 	}
-	rpc.GetRequireFeeData(51, tx)
-	st := wallet.CreateSignTransaction(51, Wallet.Default.GetActiveKey(), tx)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(51, tx)
+	//st := wallet.CreateSignTransaction(51, Wallet.Default.GetActiveKey(), tx)
+	return Wallet.SignAndSendTX(51, tx)
 }
 
 /*創建NH資產*/
@@ -118,9 +115,9 @@ func CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) e
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		WorldView:        String(world_view),
 	}
-	rpc.GetRequireFeeData(49, nh_asset)
-	st := wallet.CreateSignTransaction(49, Wallet.Default.GetActiveKey(), nh_asset)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(49, nh_asset)
+	//st := wallet.CreateSignTransaction(49, Wallet.Default.GetActiveKey(), nh_asset)
+	return Wallet.SignAndSendTX(49, nh_asset)
 }
 
 /*批准 关联世界观的提议*/
@@ -182,9 +179,9 @@ func CreateWorldView(name string) error {
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		WorldView:        String(name),
 	}
-	rpc.GetRequireFeeData(47, world_view)
-	st := wallet.CreateSignTransaction(47, Wallet.Default.GetActiveKey(), world_view)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(47, world_view)
+	//st := wallet.CreateSignTransaction(47, Wallet.Default.GetActiveKey(), world_view)
+	return Wallet.SignAndSendTX(47, world_view)
 }
 
 /*更新 token*/
@@ -270,9 +267,9 @@ func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 		Symbol:            String(symbol),
 		CommonOptionsData: cm_op,
 	}
-	rpc.GetRequireFeeData(8, AssetData)
-	st := wallet.CreateSignTransaction(8, Wallet.Default.GetActiveKey(), AssetData)
-	return rpc.BroadcastTransaction(st)
+	//rpc.GetRequireFeeData(8, AssetData)
+	//st := wallet.CreateSignTransaction(8, Wallet.Default.GetActiveKey(), AssetData)
+	return Wallet.SignAndSendTX(8, AssetData)
 }
 
 /*发行人 可以领取累计的手续费*/

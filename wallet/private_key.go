@@ -115,9 +115,6 @@ func (prk PrivateKey) GetPublicKey() PublicKey {
 }
 
 func (prk PrivateKey) Sign(data []byte) string {
-	//byte_s, _ := hex.DecodeString(data)
-	//byte_s := sha256digest(data)
-	//fmt.Println("Sign prk:::", prk.ToBase58String())
 	var nData int
 	nData = 0
 	for {

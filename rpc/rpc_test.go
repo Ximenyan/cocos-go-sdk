@@ -21,8 +21,7 @@ func TestLookByName(t *testing.T) {
 	res := GetAccountInfoByName("sept925")
 	byte_s, _ := json.Marshal(res)
 	t.Log(string(byte_s))
-}*/
-
+}
 func TestGetBalances(t *testing.T) {
 	res := GetAccountBalances("1.2.94622")
 	byte_s, _ := json.Marshal(res)
@@ -33,14 +32,16 @@ func TestGetTokenInfo(t *testing.T) {
 	res := GetTokenInfoBySymbol("WTH")
 	byte_s, _ := json.Marshal(res)
 	t.Log(string(byte_s))
-}
+}*/
 
 func TestGetOrderInfo(t *testing.T) {
-	res := GetNhAssetOrderInfo("4.3.807")
+	res := GetNhAssetOrderInfo("4.3.937")
 	byte_s, _ := json.Marshal(res)
 	t.Log(string(byte_s))
+	t.Log(res.Price.Amount)
 }
 
+/*
 func TestListNhAsset(t *testing.T) {
 	res := GetNhAssetList("ximenyan1111", 1, 10, 3, []string{"block_chain"})
 	byte_s, _ := json.Marshal(res)
@@ -127,3 +128,4 @@ func TestMarketHistory(t *testing.T) {
 	byte_s, _ := json.Marshal(res)
 	t.Log(string(byte_s))
 }
+*/

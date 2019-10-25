@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"errors"
 	"math"
 	"math/rand"
 	"strconv"
@@ -95,20 +96,14 @@ type Signed_Transaction struct {
 
 func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
-	//fmt.Println("block_num_data：", hex.EncodeToString(block_num_data))
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
-	//fmt.Println("block_prefix_data", hex.EncodeToString(block_prefix_data))
 	t, _ := time.Parse(`2006-01-02T15:04:05`, o.Expiration)
 	expiration_data := common.VarUint(uint64(t.Unix()), 32)
-	//fmt.Println("expiration_data", hex.EncodeToString(expiration_data))
 	operations_data := common.Varint(uint64(len(o.Operations)))
 	for _, op := range o.Operations {
 		operations_data = append(operations_data, op.GetBytes()...)
 	}
-	//fmt.Println("operations_data ", hex.EncodeToString(operations_data))
-	//fmt.Println("operations_data len", len(operations_data))
 	extensions_data := o.ExtensionsData.GetBytes()
-	//fmt.Println("extensions_data", hex.EncodeToString(extensions_data))
 	byte_s := append(block_num_data,
 		append(block_prefix_data,
 			append(expiration_data,
@@ -116,27 +111,29 @@ func (o Signed_Transaction) GetBytes() []byte {
 	return byte_s
 }
 
-func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) *Signed_Transaction {
+func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) (st *Signed_Transaction, err error) {
+	if prk == nil {
+		return nil, errors.New("private key is nil!!")
+	}
 	op := Operation{opID, t}
 	dgp := chain.GetDynamicGlobalProperties()
-	//time.Sleep(time.Second * 5)
-	s := &Signed_Transaction{
+	st = &Signed_Transaction{
 		RefBlockNum:    dgp.Get_ref_block_num(),
 		RefBlockPrefix: dgp.Get_ref_block_prefix(),
-		Expiration:     time.Unix(time.Now().Unix(), 0).Format(`2006-01-02T15:04:05`),
+		Expiration:     time.Unix(time.Now().Unix(), 0).Format(TIME_FORMAT),
 		Operations:     []Operation{op},
 		ExtensionsData: []interface{}{},
 		Signatures:     []string{},
 	}
-	byte_s := s.GetBytes()
-	//fmt.Println("st bytes len::", len(byte_s))
-	cid, _ := hex.DecodeString(chain.CocosBCXChain.Properties.ChainID)
+	byte_s := st.GetBytes()
+	var cid []byte
+	if cid, err = hex.DecodeString(chain.CocosBCXChain.Properties.ChainID); err != nil {
+		return nil, err
+	}
 	byte_s = append(cid, byte_s...)
-	//fmt.Println("st + chain_id bytes len::", len(byte_s))
 	msg := sha256digest(byte_s)
-	//hex.DecodeString(chain.Chain.Properties.ChainID)
-	s.Signatures = append(s.Signatures, prk.Sign(msg))
-	return s
+	st.Signatures = append(st.Signatures, prk.Sign(msg))
+	return st, nil
 }
 
 func GetNonce() uint64 {

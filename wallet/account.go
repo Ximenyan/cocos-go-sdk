@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"cocos-go-sdk/rpc"
-	. "cocos-go-sdk/type"
 )
 
 type KeyPair struct {
@@ -55,7 +54,7 @@ func (acc Account) VerificationPassword(password string) bool {
 }
 
 /*創建賬戶*/
-func CreateAccount(prk *PrivateKey, name string, password string, registrar string) *Account {
+func CreateAccount(name string, password string) *Account {
 	active_PrivateKey := CreatePrivateKeyFromSeed(name + "active" + password)
 	active_PubKey := active_PrivateKey.GetPublicKey().ToBase58String()
 	active_EncryptWif, _ := EncryptKey(active_PrivateKey.ToBase58String(), []byte(password))
@@ -88,9 +87,5 @@ func CreateAccount(prk *PrivateKey, name string, password string, registrar stri
 		Name:     name,
 		KeyPairs: []KeyPair{activePair, memoPair, ownerPair},
 	}
-	c := CreateRegisterData(active_PubKey, owner_PubKey, name, registrar, registrar)
-	rpc.GetRequireFeeData(5, c)
-	st := CreateSignTransaction(5, prk, c)
-	rpc.BroadcastTransaction(st)
 	return acc
 }
