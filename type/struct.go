@@ -25,8 +25,16 @@ type BigInt struct {
 	big.Int
 }
 
-func (i *BigInt) UnmarshalJSON(data []byte) {
-	i.SetBytes(data)
+func (i *BigInt) UnmarshalJSON(data []byte) error {
+	if data[0] == '"' {
+		data = data[1 : len(data)-1]
+	}
+	big := new(big.Int)
+	if err := json.Unmarshal(data, big); err != nil {
+		return err
+	}
+	i.SetBytes(big.Bytes())
+	return nil
 }
 
 type Object interface {
