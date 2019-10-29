@@ -5,7 +5,13 @@ import (
 	"errors"
 )
 
+type Notice struct {
+	Method string        `json:"method"`
+	Params []interface{} `json:"params"`
+}
+
 // 返回信息
+
 type RpcResp struct {
 	Result interface{} `json:"result"`
 	Id     string      `json:"id"`
