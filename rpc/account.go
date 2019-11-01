@@ -195,6 +195,7 @@ func BroadcastTransaction(tx interface{}) error {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{BROADCAST_API_ID, `broadcast_transaction`,
 			[]interface{}{tx}})
+	log.Println(" Send BroadcastTransaction ::", req.ToString())
 	if resp, err := Client.Send(req); err == nil {
 		txId := ""
 		if err = resp.GetInterface(&txId); err == nil {

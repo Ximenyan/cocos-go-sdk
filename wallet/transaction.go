@@ -44,7 +44,7 @@ type Operation []interface{}
 func (o Operation) GetBytes() []byte {
 	id := int64(o[0].(int))
 	id_data := common.VarInt(id, 8)
-	opData := o[1].(OpData)
+	opData := o[1].(Object)
 	trans_data := opData.GetBytes()
 	byte_s := append(id_data, trans_data...)
 	return byte_s
@@ -111,7 +111,7 @@ func (o Signed_Transaction) GetBytes() []byte {
 	return byte_s
 }
 
-func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) (st *Signed_Transaction, err error) {
+func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Transaction, err error) {
 	if prk == nil {
 		return nil, errors.New("private key is nil!!")
 	}

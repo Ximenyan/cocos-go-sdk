@@ -1,6 +1,5 @@
 package rpc
 
-
 import (
 	"cocos-go-sdk/common"
 	. "cocos-go-sdk/type"

@@ -40,7 +40,6 @@ func CreateContract(c_name, c_auth, data string) error {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	contract := &CreateContractData{
-		Fee:               EmptyFee(),
 		ContractAuthority: c_auth,
 		Extensions:        []interface{}{},
 		Data:              String(data),

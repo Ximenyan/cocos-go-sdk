@@ -19,7 +19,7 @@ func FillNhAsset(order_id string) error {
 		Seller:           ObjectId(order_info.Seller),
 		PriceAssetSymbol: String(order_info.AssetQualifier),
 		Order:            ObjectId(order_id),
-		Fee:              EmptyFee(),
+		//Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
@@ -32,14 +32,14 @@ func CancelNhAssetOrder(order_id string) error {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	tx := &CancelOrder{
-		Order:            ObjectId(order_id),
-		Fee:              EmptyFee(),
+		Order: ObjectId(order_id),
+		//Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
 	//rpc.GetRequireFeeData(53, tx)
 	//st := wallet.CreateSignTransaction(53, Wallet.Default.GetActiveKey(), tx)
-	return Wallet.SignAndSendTX(53, tx)
+	return Wallet.SignAndSendTX(OP_CANCEL_NH_ORDER, tx)
 }
 
 /*NH 资产卖出单*/
@@ -59,13 +59,11 @@ func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price
 		Price:            Amount{Amount: uint64(float64(price_amount) * price_precision), AssetID: ObjectId(price_asset)},
 		Seller:           ObjectId(Wallet.Default.Info.ID),
 		Otcaccount:       ObjectId(otcaccount_info.ID),
-		Fee:              EmptyFee(),
-		Expiration:       GetExpiration(),
-		Memo:             String(memo),
+		//Fee:              EmptyFee(),
+		Expiration: GetExpiration(),
+		Memo:       String(memo),
 	}
-	//rpc.GetRequireFeeData(52, tx)
-	//st := wallet.CreateSignTransaction(52, Wallet.Default.GetActiveKey(), tx)
-	return Wallet.SignAndSendTX(52, tx)
+	return Wallet.SignAndSendTX(OP_SELL_NH_ASSET, tx)
 }
 
 /*NH 资产删除*/
@@ -75,13 +73,10 @@ func DeleteNhAsset(asset_id string) error {
 	}
 	tx := &DelNhAsset{
 		NhAssetCreator: NhAssetCreator{
-			FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
-			Fee:              EmptyFee()},
+			FeePayingAccount: ObjectId(Wallet.Default.Info.ID)},
 		NhAsset: ObjectId(asset_id),
 	}
-	//rpc.GetRequireFeeData(50, tx)
-	//st := wallet.CreateSignTransaction(50, Wallet.Default.GetActiveKey(), tx)
-	return Wallet.SignAndSendTX(50, tx)
+	return Wallet.SignAndSendTX(OP_DEL_NH_ASSET, tx)
 }
 
 /*NH 资产转账*/
@@ -187,8 +182,8 @@ func CreateWorldView(name string) error {
 /*更新 token*/
 func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64, new_issuer ...string) error {
 
-	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
-	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
+	//base := Amount{Amount: amount, AssetID: ObjectId(asset)}
+	//quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
 
 	if Wallet.Default.Info == nil {
@@ -196,14 +191,14 @@ func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 	}
 	precision = uint64(math.Pow10(int(precision)))
 	cm_op := CommonOptions{
-		MaxSupply:            max_supply * precision,
-		MarketFeePercent:     0,
-		MaxMarketFee:         0,
-		Flags:                0,
-		IssuerPermissions:    79,
-		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
-		Description:          String(`{"main":"` + symbol + `","short_name":"","market":""}`),
-		Extensions:           []interface{}{},
+		MaxSupply:         max_supply * precision,
+		MarketFeePercent:  0,
+		MaxMarketFee:      0,
+		Flags:             0,
+		IssuerPermissions: 79,
+		//CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
+		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
+		Extensions:  []interface{}{},
 	}
 	var newIssuer ObjectId
 	if len(new_issuer) >= 1 {
@@ -248,19 +243,18 @@ func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
-	precision = uint64(math.Pow10(int(precision)))
+	new_precision := uint64(math.Pow10(int(precision)))
 	cm_op := CommonOptions{
-		MaxSupply:            max_supply * precision,
+		MaxSupply:            max_supply * new_precision,
 		MarketFeePercent:     0,
 		MaxMarketFee:         0,
 		Flags:                0,
-		IssuerPermissions:    79,
+		IssuerPermissions:    15,
 		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
 		Description:          String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:           []interface{}{},
 	}
 	AssetData := &CreateAssetData{
-		Fee:               EmptyFee(),
 		Extensions:        []interface{}{},
 		Precision:         precision,
 		Issuer:            ObjectId(Wallet.Default.Info.ID),

@@ -111,7 +111,7 @@ type OpData interface {
 
 /*手续费*/
 type Fee struct {
-	FeeData Amount `json:"fee"`
+	FeeData Amount `json:"-"`
 }
 
 func (o *Fee) SetFee(amount uint64) {
@@ -120,15 +120,11 @@ func (o *Fee) SetFee(amount uint64) {
 }
 
 type NhAssetCreator struct {
-	Fee
 	FeePayingAccount ObjectId `json:"fee_paying_account"`
 }
 
 func (o NhAssetCreator) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
-	fpa_data := o.FeePayingAccount.GetBytes()
-	byte_s := append(fee_data, fpa_data...)
-	return byte_s
+	return o.FeePayingAccount.GetBytes()
 }
 
 type WorldView struct {
@@ -138,11 +134,10 @@ type WorldView struct {
 }
 
 func (o WorldView) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	fpa_data := o.FeePayingAccount.GetBytes()
 	wv_data := o.WorldView.GetBytes()
-	byte_s := append(fee_data,
-		append(fpa_data, wv_data...)...)
+	byte_s := append(fpa_data, wv_data...)
 	return byte_s
 }
 
@@ -154,13 +149,12 @@ type ProposedOps struct {
 }
 
 func (o ProposedOps) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	ra_data := o.RelatedAccount.GetBytes()
 	wv_data := o.WorldView.GetBytes()
 	owner_data := o.ViewOwner.GetBytes()
-	byte_s := append(fee_data,
-		append(ra_data,
-			append(wv_data, owner_data...)...)...)
+	byte_s := append(ra_data,
+		append(wv_data, owner_data...)...)
 	return byte_s
 }
 
@@ -190,7 +184,7 @@ type RelatedWorldView struct {
 }
 
 func (o RelatedWorldView) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	fpa_data := o.FeePayingAccount.GetBytes()
 	exp_data := o.ExpirationTime.GetBytes()
 	p_ops_data := common.Varint(uint64(len(o.ProposedOps)))
@@ -199,11 +193,10 @@ func (o RelatedWorldView) GetBytes() []byte {
 	}
 	rps_data := []byte{0x0}
 	ext_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
-		append(fpa_data,
-			append(exp_data,
-				append(p_ops_data,
-					append(rps_data, ext_data...)...)...)...)...)
+	byte_s := append(fpa_data,
+		append(exp_data,
+			append(p_ops_data,
+				append(rps_data, ext_data...)...)...)...)
 	return byte_s
 }
 
@@ -231,7 +224,7 @@ type Approvals struct {
 }
 
 func (o Approvals) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	fpa_data := o.FeePayingAccount.GetBytes()
 	proposal_data := o.Proposal.GetBytes()
 	active_add_data := o.ActiveApprovalsToAdd.GetBytes()
@@ -241,15 +234,14 @@ func (o Approvals) GetBytes() []byte {
 	key_add_data := o.KeyApprovalsToAdd.GetBytes()
 	key_remove_data := o.KeyApprovalsToRemove.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
-		append(fpa_data,
-			append(proposal_data,
-				append(active_add_data,
-					append(active_remove_data,
-						append(owner_add_data,
-							append(owner_remove_data,
-								append(key_add_data,
-									append(key_remove_data, extensions_data...)...)...)...)...)...)...)...)...)
+	byte_s := append(fpa_data,
+		append(proposal_data,
+			append(active_add_data,
+				append(active_remove_data,
+					append(owner_add_data,
+						append(owner_remove_data,
+							append(key_add_data,
+								append(key_remove_data, extensions_data...)...)...)...)...)...)...)...)
 	return byte_s
 }
 
@@ -263,17 +255,16 @@ type NhAsset struct {
 }
 
 func (o NhAsset) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	fpa_data := o.FeePayingAccount.GetBytes()
 	owner_data := o.Owner.GetBytes()
 	asset_data := o.AssetID.GetBytes()
 	wv_data := o.WorldView.GetBytes()
 	des_data := o.BaseDescribe.GetBytes()
-	byte_s := append(fee_data,
-		append(fpa_data,
-			append(owner_data,
-				append(asset_data,
-					append(wv_data, des_data...)...)...)...)...)
+	byte_s := append(fpa_data,
+		append(owner_data,
+			append(asset_data,
+				append(wv_data, des_data...)...)...)...)
 	return byte_s
 }
 
@@ -285,13 +276,12 @@ type TransferNh struct {
 }
 
 func (o TransferNh) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	from_data := o.From.GetBytes()
 	to_data := o.To.GetBytes()
 	nh_asset_data := o.NhAsset.GetBytes()
-	byte_s := append(fee_data,
-		append(from_data,
-			append(to_data, nh_asset_data...)...)...)
+	byte_s := append(from_data,
+		append(to_data, nh_asset_data...)...)
 	return byte_s
 }
 
@@ -301,15 +291,14 @@ type DelNhAsset struct {
 }
 
 func (o DelNhAsset) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	fpa_data := o.FeePayingAccount.GetBytes()
 	nh_asset_data := o.NhAsset.GetBytes()
-	byte_s := append(fee_data, append(fpa_data, nh_asset_data...)...)
+	byte_s := append(fpa_data, nh_asset_data...)
 	return byte_s
 }
 
 type NhOrder struct {
-	Fee
 	Seller           ObjectId   `json:"seller"`
 	Otcaccount       ObjectId   `json:"otcaccount"`
 	PendingOrdersFee Amount     `json:"pending_orders_fee"`
@@ -320,7 +309,7 @@ type NhOrder struct {
 }
 
 func (o NhOrder) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	seller_data := o.Seller.GetBytes()
 	otc_acc_data := o.Otcaccount.GetBytes()
 	pof_data := o.PendingOrdersFee.GetBytes()
@@ -328,18 +317,16 @@ func (o NhOrder) GetBytes() []byte {
 	memo_data := o.Memo.GetBytes()
 	price_data := o.Price.GetBytes()
 	expiration_data := o.Expiration.GetBytes()
-	byte_s := append(fee_data,
-		append(seller_data,
-			append(otc_acc_data,
-				append(pof_data,
-					append(nh_asset_data,
-						append(memo_data,
-							append(price_data, expiration_data...)...)...)...)...)...)...)
+	byte_s := append(seller_data,
+		append(otc_acc_data,
+			append(pof_data,
+				append(nh_asset_data,
+					append(memo_data,
+						append(price_data, expiration_data...)...)...)...)...)...)
 	return byte_s
 }
 
 type FillNhOrder struct {
-	Fee
 	Order            ObjectId   `json:"order"`
 	FeePayingAccount ObjectId   `json:"fee_paying_account"`
 	Seller           ObjectId   `json:"seller"`
@@ -351,7 +338,7 @@ type FillNhOrder struct {
 }
 
 func (o FillNhOrder) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	order_data := o.Order.GetBytes()
 	fpa_data := o.FeePayingAccount.GetBytes()
 	seller_data := o.Seller.GetBytes()
@@ -360,38 +347,34 @@ func (o FillNhOrder) GetBytes() []byte {
 	price_id_data := o.PriceAssetID.GetBytes()
 	price_symbol_data := o.PriceAssetSymbol.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
-		append(order_data,
-			append(fpa_data,
-				append(seller_data,
-					append(nh_asset_data,
-						append(price_amount_data,
-							append(price_id_data,
-								append(price_symbol_data, extensions_data...)...)...)...)...)...)...)...)
+	byte_s := append(order_data,
+		append(fpa_data,
+			append(seller_data,
+				append(nh_asset_data,
+					append(price_amount_data,
+						append(price_id_data,
+							append(price_symbol_data, extensions_data...)...)...)...)...)...)...)
 	//fmt.Println("CancelOrder::", len(byte_s))
 	return byte_s
 }
 
 type CancelOrder struct {
-	Fee
 	Order            ObjectId   `json:"order"`
 	FeePayingAccount ObjectId   `json:"fee_paying_account"`
 	Extensions       Extensions `json:"extensions"`
 }
 
 func (o CancelOrder) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	order_data := o.Order.GetBytes()
 	fpa_data := o.FeePayingAccount.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
-		append(order_data,
-			append(fpa_data, extensions_data...)...)...)
+	byte_s := append(order_data,
+		append(fpa_data, extensions_data...)...)
 	return byte_s
 }
 
 type UpgradeAccount struct {
-	Fee
 	AccountToUpgrade        ObjectId   `json:"account_to_upgrade"`
 	UpgradeToLifetimeMember bool       `json:"upgrade_to_lifetime_member"`
 	ExtensionsData          Extensions `json:"extensions"`
@@ -403,21 +386,19 @@ func CreateUpgradeAccount(name string, account_id string) *UpgradeAccount {
 		AccountToUpgrade:        ObjectId(account_id),
 		UpgradeToLifetimeMember: true,
 	}
-	u.FeeData = Amount{Amount: 0, AssetID: COCOS_ID}
 	return u
 }
 
 func (o UpgradeAccount) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	atu_data := o.AccountToUpgrade.GetBytes()
 	utlm_data := []byte{0}
 	if o.UpgradeToLifetimeMember {
 		utlm_data = []byte{1}
 	}
 	extensions_data := o.ExtensionsData.GetBytes()
-	byte_s := append(fee_data,
-		append(atu_data,
-			append(utlm_data, extensions_data...)...)...)
+	byte_s := append(atu_data,
+		append(utlm_data, extensions_data...)...)
 	return byte_s
 }
 
@@ -487,7 +468,7 @@ type RegisterData struct {
 }
 
 func (o RegisterData) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	referrer_data := o.Referrer.GetBytes()
 	registrar_data := o.Registrar.GetBytes()
 	referrer_percent_data := common.VarInt(o.ReferrerPercent, 16)
@@ -496,14 +477,14 @@ func (o RegisterData) GetBytes() []byte {
 	active_data := o.Active.GetBytes()
 	op_data := o.OptionsData.GetBytes()
 	extensions_data := o.ExtensionsData.GetBytes()
-	byte_s := append(fee_data,
+	byte_s :=
 		append(registrar_data,
 			append(referrer_data,
 				append(referrer_percent_data,
 					append(name_data,
 						append(owner_data,
 							append(active_data,
-								append(op_data, extensions_data...)...)...)...)...)...)...)...)
+								append(op_data, extensions_data...)...)...)...)...)...)...)
 	return byte_s
 }
 
@@ -585,7 +566,6 @@ func (o CommonOptions) GetBytes() []byte {
 
 /*创建代币的数据结构*/
 type CreateAssetData struct {
-	Fee
 	Issuer            ObjectId      `json:"issuer"`
 	Symbol            String        `json:"symbol"`
 	Precision         uint64        `json:"precision"`
@@ -594,19 +574,17 @@ type CreateAssetData struct {
 }
 
 func (o CreateAssetData) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
 	issuer_data := o.Issuer.GetBytes()
 	symbol_data := o.Symbol.GetBytes()
 	precision_data := common.VarUint(o.Precision, 8)
 	cod_data := o.CommonOptionsData.GetBytes()
 	bo_data := common.VarUint(0, 8)
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
-		append(issuer_data,
-			append(symbol_data,
-				append(precision_data,
-					append(cod_data,
-						append(bo_data, extensions_data...)...)...)...)...)...)
+	byte_s := append(issuer_data,
+		append(symbol_data,
+			append(precision_data,
+				append(cod_data,
+					append(bo_data, extensions_data...)...)...)...)...)
 	return byte_s
 }
 
@@ -621,17 +599,17 @@ type UpdateAssetData struct {
 }
 
 func (o UpdateAssetData) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	issuer_data := o.Issuer.GetBytes()
 	new_issuer_data := o.NewIssuer.GetBytes()
 	asset_data := o.AssetToUpdate.GetBytes()
 	cod_data := o.NewOptionsData.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
+	byte_s :=
 		append(issuer_data,
 			append(asset_data,
 				append(new_issuer_data,
-					append(cod_data, extensions_data...)...)...)...)...)
+					append(cod_data, extensions_data...)...)...)...)
 	return byte_s
 }
 
@@ -711,17 +689,17 @@ type Transaction struct {
 }
 
 func (o Transaction) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	from_data := o.From.GetBytes()
 	to_data := o.To.GetBytes()
 	amount_data := o.AmountData.GetBytes()
 	memo_data := o.MemoData.GetBytes()
 	extensions_data := o.ExtensionsData.GetBytes()
-	byte_s := append(fee_data,
+	byte_s :=
 		append(from_data,
 			append(to_data,
 				append(amount_data,
-					append(memo_data, extensions_data...)...)...)...)...)
+					append(memo_data, extensions_data...)...)...)...)
 	return byte_s
 }
 
@@ -735,22 +713,21 @@ type CallData struct {
 }
 
 func (o CallData) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	value_list_data := o.ValueList.GetBytes()
 	caller_data := o.Caller.GetBytes()
 	func_name_data := o.FunctionName.GetBytes()
 	contract_id_data := o.ContractID.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
+	byte_s :=
 		append(caller_data,
 			append(contract_id_data,
 				append(func_name_data,
-					append(value_list_data, extensions_data...)...)...)...)...)
+					append(value_list_data, extensions_data...)...)...)...)
 	return byte_s
 }
 
 type CreateContractData struct {
-	Fee
 	Extensions        Extensions `json:"extensions"`
 	Owner             ObjectId   `json:"owner"`
 	Name              String     `json:"name"`
@@ -759,17 +736,17 @@ type CreateContractData struct {
 }
 
 func (o CreateContractData) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	c_auth_data := PukBytesFromBase58String(o.ContractAuthority)
 	owner_data := o.Owner.GetBytes()
 	data_data := o.Data.GetBytes()
 	name_data := o.Name.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
+	byte_s :=
 		append(owner_data,
 			append(name_data,
 				append(data_data,
-					append(c_auth_data, extensions_data...)...)...)...)...)
+					append(c_auth_data, extensions_data...)...)...)...)
 	return byte_s
 }
 
@@ -782,15 +759,15 @@ type UpdateContractData struct {
 }
 
 func (o UpdateContractData) GetBytes() []byte {
-	fee_data := o.FeeData.GetBytes()
+
 	contract_id_data := o.ContractID.GetBytes()
 	reviser_data := o.Reviser.GetBytes()
 	data_data := o.Data.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(fee_data,
+	byte_s :=
 		append(reviser_data,
 			append(contract_id_data,
-				append(data_data, extensions_data...)...)...)...)
+				append(data_data, extensions_data...)...)...)
 	return byte_s
 }
 
