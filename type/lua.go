@@ -40,9 +40,47 @@ func (o LuaObject) GetBytes() []byte {
 	return byte_s
 }
 
+type Table struct {
+	Dict  map[string]interface{}
+	Array []interface{}
+}
+
+func (o *LuaObject) GetTable() *Table {
+	if o.Type != TABLE {
+		return nil
+	}
+	if m, ok := o.Value.(map[*LuaObject]*LuaObject); ok {
+		tab := &Table{Dict: make(map[string]interface{}), Array: []interface{}{}}
+		for k, v := range m {
+			if k.Type == INT {
+				if v.Type == TABLE {
+					tab.Array = append(tab.Array, v.GetTable())
+				} else {
+					tab.Array = append(tab.Array, v.Value)
+				}
+			}
+			if k.Type == STRING {
+				if v.Type == TABLE {
+					tab.Dict[k.Value.(string)] = v.GetTable()
+				} else {
+					tab.Dict[k.Value.(string)] = v.Value
+				}
+			}
+		}
+		return tab
+	}
+	return nil
+
+}
+
 func (o *LuaObject) UnmarshalJSON(data []byte) (err error) {
 	tmp := []interface{}{}
 	if err = json.Unmarshal(data, &tmp); err != nil {
+		return
+	}
+	if len(tmp) <= 0 {
+		o.Type = TABLE
+		o.Value = make(map[*LuaObject]*LuaObject)
 		return
 	}
 	if o_type, ok := tmp[0].(float64); ok {
