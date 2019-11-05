@@ -92,13 +92,13 @@ func (c *RpcClient) handler() {
 			//log.Println(reply)
 			if err = json.Unmarshal([]byte(reply), ret); err == nil && ret.Id != `` {
 				if f, ok := c.Handler.Load(ret.Id); ok {
-					f.(func(r *RpcResp) error)(ret)
+					go f.(func(r *RpcResp) error)(ret)
 					c.Handler.Delete(ret.Id)
 				}
 			} else if err = json.Unmarshal([]byte(reply), notice); err == nil {
 				//log.Println(notice.Params[0].(string))
 				if f, ok := c.SubscribeHandler.Load(notice.Params[0].(string)); ok {
-					f.(func(r *Notice) error)(notice)
+					go f.(func(r *Notice) error)(notice)
 				}
 			} else {
 				log.Println("xxxxxxxxxxx")
@@ -134,6 +134,7 @@ func (c *RpcClient) Subscribe(subscribe string, f func(r *Notice) error) (ret *R
 func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 	ret = &RpcResp{}
 	reqJson := reqData.ToString()
+	log.Println("send::", reqJson)
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
 		ch := make(chan *RpcResp)
 		c.Handler.Store(strconv.Itoa(int(reqData.Id)), func(r *RpcResp) error {

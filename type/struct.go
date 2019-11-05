@@ -470,7 +470,7 @@ func (o Options) GetBytes() []byte {
 type String string
 
 func (o String) GetBytes() []byte {
-	byte_s := append([]byte{byte(len(o))}, []byte(o)...)
+	byte_s := append(common.Varint(uint64(len(o))), []byte(o)...)
 	return byte_s
 }
 
