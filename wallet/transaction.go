@@ -8,6 +8,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -96,10 +97,14 @@ type Signed_Transaction struct {
 
 func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
+	fmt.Println("block_num_data", block_num_data)
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
-	t, _ := time.Parse(`2006-01-02T15:04:05`, o.Expiration)
+	fmt.Println("block_prefix_data", block_prefix_data)
+	t, _ := time.Parse(TIME_FORMAT, o.Expiration)
 	expiration_data := common.VarUint(uint64(t.Unix()), 32)
+	fmt.Println("expiration_data", expiration_data)
 	operations_data := common.Varint(uint64(len(o.Operations)))
+	fmt.Println("operations_data", operations_data)
 	for _, op := range o.Operations {
 		operations_data = append(operations_data, op.GetBytes()...)
 	}
@@ -131,6 +136,7 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) (st *Signed_Tran
 		return nil, err
 	}
 	byte_s = append(cid, byte_s...)
+	fmt.Println(hex.EncodeToString(byte_s))
 	msg := sha256digest(byte_s)
 	st.Signatures = append(st.Signatures, prk.Sign(msg))
 	return st, nil
