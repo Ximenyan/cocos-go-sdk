@@ -6,7 +6,12 @@ import (
 
 func TestVarint(t *testing.T) {
 
-	t.Log(Varint(0x81))
+	t.Log(Varint(1234431))
+}
+
+func TestIntVar(t *testing.T) {
+
+	t.Log(Intvar([]byte{255, 171, 75}))
 }
 func TestVarUint(t *testing.T) {
 
