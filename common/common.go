@@ -80,13 +80,13 @@ func VarInt(si int64, base uint) []byte {
 	return byte_s
 }
 
-func UintVar(byte_s []byte) uint64 {
+func UintVar(byte_s []byte) int64 {
 	i := len(byte_s)
 	for byte_s[i-1] == 0 {
 		byte_s = byte_s[:i]
 		i -= 1
 	}
-	return new(big.Int).SetBytes(byte_s).Uint64()
+	return new(big.Int).SetBytes(byte_s).Int64()
 }
 
 func VarUint(ui uint64, base uint) []byte {

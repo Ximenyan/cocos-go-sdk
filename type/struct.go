@@ -85,7 +85,7 @@ type Memo struct {
 
 func (o Memo) GetBytes() []byte {
 	from := PukBytesFromBase58String(o.From)
-	fmt.Println("from len:", len(from))
+	fmt.Println(len(from))
 	to := PukBytesFromBase58String(o.To)
 	nonce := common.VarUint(o.Nonce, 64)
 	msg, _ := hex.DecodeString(o.Message)
