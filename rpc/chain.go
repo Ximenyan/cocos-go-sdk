@@ -53,8 +53,8 @@ func GetTransactionById(txId string) *TransactinInfo {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `get_transaction_by_id`,
 			[]interface{}{txId}})
-	tx_info := &TransactinInfo{}
 	if resp, err := Client.Send(req); err == nil {
+		tx_info := &TransactinInfo{}
 		if err = resp.GetInterface(tx_info); err == nil {
 			return tx_info
 		}
@@ -63,14 +63,14 @@ func GetTransactionById(txId string) *TransactinInfo {
 }
 
 type Block struct {
-	Previous              string             `json:"previous"`
-	Timestamp             string             `json:"timestamp"`
-	Witness               string             `json:"witness"`
-	TransactionMerkleRoot string             `json:"transaction_merkle_root"`
-	Extensions            []interface{}      `json:"extensions"`
-	WitnessSignature      string             `json:"witness_signature"`
-	BlockID               string             `json:"block_id"`
-	Transactions          [][]TransactinInfo `json:"transactions"`
+	Previous              string          `json:"previous"`
+	Timestamp             string          `json:"timestamp"`
+	Witness               string          `json:"witness"`
+	TransactionMerkleRoot string          `json:"transaction_merkle_root"`
+	Extensions            []interface{}   `json:"extensions"`
+	WitnessSignature      string          `json:"witness_signature"`
+	BlockID               string          `json:"block_id"`
+	Transactions          [][]interface{} `json:"transactions"`
 }
 
 func GetBlock(block int) *Block {
@@ -79,6 +79,7 @@ func GetBlock(block int) *Block {
 			[]interface{}{block}})
 	block_info := &Block{}
 	if resp, err := Client.Send(req); err == nil {
+		//log.Println(resp)
 		if err = resp.GetInterface(block_info); err == nil {
 			return block_info
 		}
