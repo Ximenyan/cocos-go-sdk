@@ -73,7 +73,7 @@ type Block struct {
 	Transactions          [][]interface{} `json:"transactions"`
 }
 
-func GetBlock(block int) *Block {
+func GetBlock(block int64) *Block {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `get_block`,
 			[]interface{}{block}})

@@ -5,7 +5,7 @@ import (
 )
 
 /*查询Block*/
-func GetBlock(block_hight int) *rpc.Block {
+func GetBlock(block_hight int64) *rpc.Block {
 	return rpc.GetBlock(block_hight)
 }
 

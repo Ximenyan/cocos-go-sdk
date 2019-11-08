@@ -419,7 +419,7 @@ func GetVestingBalances(acct_name string) []rpc.VestingBalances {
 }
 
 /*查询账户操作记录*/
-func GetAccountHistorys(acct_name string) []interface{} {
+func GetAccountHistorys(acct_name string) rpc.History {
 	return rpc.GetAccountHistory(acct_name)
 }
 

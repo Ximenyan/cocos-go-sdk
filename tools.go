@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -22,11 +23,13 @@ type UTXO struct {
 }
 
 type Tx struct {
-	TxHash  string      `json:"tx_hash"`
-	Inputs  []UTXO      `json:"inputs"`
-	Outputs []UTXO      `json:"outputs"`
-	TxAt    string      `json:"tx_at"`
-	Extra   interface{} `json:"extra"`
+	TxHash      string      `json:"tx_hash"`
+	Inputs      []UTXO      `json:"inputs"`
+	Outputs     []UTXO      `json:"outputs"`
+	TxAt        string      `json:"tx_at"`
+	BlockNumber int64       `json:"block_no"`
+	ConfirmedAt string      `json:"confirmed_at"`
+	Extra       interface{} `json:"extra"`
 }
 
 func Deserialize(tx_raw_hex string) (tx *Tx, err error) {
@@ -159,7 +162,7 @@ func Getrawmempool() {
 
 }
 
-func Getblocktxs(count int) (txs []Tx, err error) {
+func Getblocktxs(count int64) (txs []Tx, err error) {
 	block := GetBlock(count)
 	defer func() {
 		if recover() != nil {
@@ -175,6 +178,8 @@ func Getblocktxs(count int) (txs []Tx, err error) {
 			tx_operations := tx.Get("1.operations").Array()
 			inputs := []UTXO{}
 			outputs := []UTXO{}
+
+			tx_at := tx.Get("1.expiration").String()
 			for _, operation := range tx_operations {
 				tx_op_code := operation.Get("0").Int()
 				tx_op_data := operation.Get("1")
@@ -200,11 +205,12 @@ func Getblocktxs(count int) (txs []Tx, err error) {
 			}
 			if len(inputs) > 0 && len(outputs) > 0 {
 				tx := Tx{
-					TxHash:  tx_hash,
-					Inputs:  inputs,
-					Outputs: outputs,
-					TxAt:    block.Timestamp,
-					Extra:   []interface{}{},
+					TxHash:      tx_hash,
+					Inputs:      inputs,
+					Outputs:     outputs,
+					TxAt:        tx_at,
+					ConfirmedAt: block.Timestamp,
+					Extra:       []interface{}{},
 				}
 				txs = append(txs, tx)
 			}
@@ -216,8 +222,73 @@ func Getblocktxs(count int) (txs []Tx, err error) {
 func BalanceForAddress() {
 
 }
-func TxsForAddress(address string) {
-	GetAccountHistorys(address)
+func TxsForAddress(address string) (txs []Tx, err error) {
+	defer func() {
+		if cover := recover(); cover != nil {
+			txs = nil
+			log.Println(cover)
+			err = errors.New("Get Txs For Address Is Error!")
+		}
+	}()
+	txs = []Tx{}
+	for _, tx_info := range GetAccountHistorys(address) {
+		if byte_s, err := json.Marshal(tx_info); err == nil {
+			tx := gjson.ParseBytes(byte_s)
+			operation := tx.Get("op")
+			tx_op_code := operation.Get("0").Int()
+			if tx_op_code != OP_TRANSFER {
+				continue
+			}
+			block_num := tx.Get("block_num").Int()
+			trx_in_block := tx.Get("trx_in_block").Int()
+			block := GetBlock(block_num)
+			tx_info := block.Transactions[trx_in_block]
+			if byte_s, err := json.Marshal(tx_info); err == nil {
+				tx := gjson.ParseBytes(byte_s)
+				tx_hash := tx.Get("0").String()
+				tx_at := tx.Get("1.expiration").String()
+				tx_operations := tx.Get("1.operations").Array()
+				inputs := []UTXO{}
+				outputs := []UTXO{}
+				for _, operation := range tx_operations {
+					tx_op_code := operation.Get("0").Int()
+					tx_op_data := operation.Get("1")
+					if tx_op_code != OP_TRANSFER {
+						continue
+					}
+					fee_amount := tx_op_data.Get("fee.amount").Int()
+					out_amount := tx_op_data.Get("amount.amount").Int()
+					from_info := rpc.GetAccountInfo(tx_op_data.Get("from").String())
+					to_info := rpc.GetAccountInfo(tx_op_data.Get("to").String())
+					in := UTXO{
+						Value:   fee_amount + out_amount,
+						Address: from_info.Name,
+						Sn:      0,
+					}
+					out := UTXO{
+						Value:   out_amount,
+						Address: to_info.Name,
+						Sn:      0,
+					}
+					inputs = append(inputs, in)
+					outputs = append(outputs, out)
+				}
+				if len(inputs) > 0 && len(outputs) > 0 {
+					tx := Tx{
+						TxHash:      tx_hash,
+						Inputs:      inputs,
+						Outputs:     outputs,
+						TxAt:        tx_at,
+						BlockNumber: block_num,
+						ConfirmedAt: block.Timestamp,
+						Extra:       []interface{}{},
+					}
+					txs = append(txs, tx)
+				}
+			}
+		}
+	}
+	return
 }
 
 func GetTransaction(tx_hash string) (tx *Tx, err error) {
