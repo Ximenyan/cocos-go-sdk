@@ -53,8 +53,8 @@ func GetTransactionById(txId string) *TransactinInfo {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `get_transaction_by_id`,
 			[]interface{}{txId}})
-	tx_info := &TransactinInfo{}
 	if resp, err := Client.Send(req); err == nil {
+		tx_info := &TransactinInfo{}
 		if err = resp.GetInterface(tx_info); err == nil {
 			return tx_info
 		}
@@ -73,7 +73,7 @@ type Block struct {
 	Transactions          [][]interface{} `json:"transactions"`
 }
 
-func GetBlock(block int) *Block {
+func GetBlock(block int64) *Block {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{0, `get_block`,
 			[]interface{}{block}})
@@ -153,4 +153,45 @@ func GetVestingBalancesByName(acct_name string) []VestingBalances {
 		}
 	}
 	return nil
+}
+
+type DynamicGlobalProperties struct {
+	AccountsRegistered_thisInterval int    `json:"accounts_registered_this_interval"`
+	CurrentAslot                    int    `json:"current_aslot"`
+	CurrentTransactionCount         int    `json:"current_transaction_count"`
+	CurrentWitness                  string `json:"current_witness"`
+	DynamicFlags                    int    `json:"dynamic_flags"`
+	HeadBlockID                     string `json:"head_block_id"`
+	HeadBlockNumber                 int    `json:"head_block_number"`
+	ID                              string `json:"id"`
+	LastBudgetTime                  string `json:"last_budget_time"`
+	LastIrreversib_leBlockNum       int    `json:"last_irreversible_block_num"`
+	NextMaintenanceTime             string `json:"next_maintenance_time"`
+	RecentSlotsFilled               string `json:"recent_slots_filled"`
+	RecentlyMissedCount             int    `json:"recently_missed_count"`
+	Time                            string `json:"time"`
+	WitnessBudget                   int    `json:"witness_budget"`
+}
+
+func GetDynamicGlobalProperties() *DynamicGlobalProperties {
+	dgp := &DynamicGlobalProperties{}
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `get_dynamic_global_properties`,
+			[]interface{}{}})
+	if resp, err := Client.Send(req); err == nil {
+		if err = resp.GetInterface(dgp); err == nil {
+			return dgp
+		}
+	}
+	return nil
+}
+
+func (p *DynamicGlobalProperties) Get_ref_block_num() uint64 {
+	return uint64(p.HeadBlockNumber & 0xffff)
+}
+
+func (p *DynamicGlobalProperties) Get_ref_block_prefix() uint64 {
+	byte_s, _ := hex.DecodeString(p.HeadBlockID)
+	ref_block_prefix := new(big.Int).SetBytes(common.ReverseBytes(byte_s[4:8])).Uint64()
+	return ref_block_prefix
 }
