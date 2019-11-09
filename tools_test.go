@@ -17,7 +17,7 @@ func TestInitSdk(t *testing.T) {
 	t.Log(rpc.GetDynamicGlobalProperties())
 }
 func TestTxsForAddress(t *testing.T) {
-	txs, err := TxsForAddress("1.2.94535")
+	txs, err := TxsForAddress("1.2.350")
 	t.Log(err)
 	byte_s, err := json.Marshal(txs)
 	if err == nil {

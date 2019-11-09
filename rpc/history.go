@@ -33,7 +33,7 @@ func GetAccountHistory(acct_id string) History {
 				}
 				Historys = append(Historys, historys...)
 				start = historys[len(historys)-1].ID
-				if len(historys) < 100 {
+				if len(historys) < 50 {
 					get_end = true
 				}
 			}
