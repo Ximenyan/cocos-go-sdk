@@ -97,7 +97,7 @@ type Signed_Transaction struct {
 func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
-	t, _ := time.Parse(`2006-01-02T15:04:05`, o.Expiration)
+	t, _ := time.Parse(TIME_FORMAT, o.Expiration)
 	expiration_data := common.VarUint(uint64(t.Unix()), 32)
 	operations_data := common.Varint(uint64(len(o.Operations)))
 	for _, op := range o.Operations {
@@ -116,7 +116,7 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Tran
 		return nil, errors.New("private key is nil!!")
 	}
 	op := Operation{opID, t}
-	dgp := chain.GetDynamicGlobalProperties()
+	dgp := rpc.GetDynamicGlobalProperties()
 	st = &Signed_Transaction{
 		RefBlockNum:    dgp.Get_ref_block_num(),
 		RefBlockPrefix: dgp.Get_ref_block_prefix(),

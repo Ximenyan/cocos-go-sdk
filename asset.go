@@ -19,7 +19,6 @@ func FillNhAsset(order_id string) error {
 		Seller:           ObjectId(order_info.Seller),
 		PriceAssetSymbol: String(order_info.AssetQualifier),
 		Order:            ObjectId(order_id),
-		//Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
@@ -33,12 +32,9 @@ func CancelNhAssetOrder(order_id string) error {
 	}
 	tx := &CancelOrder{
 		Order: ObjectId(order_id),
-		//Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
-	//rpc.GetRequireFeeData(53, tx)
-	//st := wallet.CreateSignTransaction(53, Wallet.Default.GetActiveKey(), tx)
 	return Wallet.SignAndSendTX(OP_CANCEL_NH_ORDER, tx)
 }
 
@@ -59,7 +55,6 @@ func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price
 		Price:            Amount{Amount: uint64(float64(price_amount) * price_precision), AssetID: ObjectId(price_asset)},
 		Seller:           ObjectId(Wallet.Default.Info.ID),
 		Otcaccount:       ObjectId(otcaccount_info.ID),
-		//Fee:              EmptyFee(),
 		Expiration: GetExpiration(),
 		Memo:       String(memo),
 	}
@@ -182,8 +177,8 @@ func CreateWorldView(name string) error {
 /*更新 token*/
 func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64, new_issuer ...string) error {
 
-	//base := Amount{Amount: amount, AssetID: ObjectId(asset)}
-	//quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
+	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
+	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
 
 	if Wallet.Default.Info == nil {
@@ -196,7 +191,7 @@ func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 		MaxMarketFee:      0,
 		Flags:             0,
 		IssuerPermissions: 79,
-		//CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
+		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
 		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:  []interface{}{},
 	}
@@ -413,7 +408,7 @@ func GetVestingBalances(acct_name string) []rpc.VestingBalances {
 }
 
 /*查询账户操作记录*/
-func GetAccountHistorys(acct_name string) []interface{} {
+func GetAccountHistorys(acct_name string) rpc.History {
 	return rpc.GetAccountHistory(acct_name)
 }
 

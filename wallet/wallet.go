@@ -223,7 +223,6 @@ func (w *Wallet) UpgradeAccount(name string) error {
 func (w *Wallet) RegisterNhAssetCreator(name string) error {
 	info := rpc.GetAccountInfoByName(name)
 	t := &NhAssetCreator{
-		//Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(info.ID),
 	}
 	//rpc.GetRequireFeeData(46, t)
@@ -251,7 +250,6 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 	return errors.New("no account name:" + name)
 }
 func (w *Wallet) SignAndSendTX(opID int, t Object) error {
-	//rpc.GetRequireFeeData(opID, t)
 	if st, err := CreateSignTransaction(opID, w.Default.GetActiveKey(), t); err != nil {
 		return err
 	} else {
