@@ -31,7 +31,7 @@ func CancelNhAssetOrder(order_id string) error {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	tx := &CancelOrder{
-		Order: ObjectId(order_id),
+		Order:            ObjectId(order_id),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
@@ -55,8 +55,8 @@ func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price
 		Price:            Amount{Amount: uint64(float64(price_amount) * price_precision), AssetID: ObjectId(price_asset)},
 		Seller:           ObjectId(Wallet.Default.Info.ID),
 		Otcaccount:       ObjectId(otcaccount_info.ID),
-		Expiration: GetExpiration(),
-		Memo:       String(memo),
+		Expiration:       GetExpiration(),
+		Memo:             String(memo),
 	}
 	return Wallet.SignAndSendTX(OP_SELL_NH_ASSET, tx)
 }
@@ -177,8 +177,8 @@ func CreateWorldView(name string) error {
 /*更新 token*/
 func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64, new_issuer ...string) error {
 
-	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
-	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
+	//base := Amount{Amount: amount, AssetID: ObjectId(asset)}
+	//quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
 
 	if Wallet.Default.Info == nil {
@@ -191,7 +191,7 @@ func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 		MaxMarketFee:      0,
 		Flags:             0,
 		IssuerPermissions: 79,
-		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
+		//CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
 		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:  []interface{}{},
 	}
@@ -231,23 +231,24 @@ func ReserveToken(symbol string, amount float64) error {
 }
 
 /*创建 token*/
-func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error {
+func CreateToken(symbol string, precision, max_supply uint64) error {
 
-	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
-	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
+	//base := Amount{Amount: amount, AssetID: ObjectId(asset)}
+	//quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	new_precision := uint64(math.Pow10(int(precision)))
+
 	cm_op := CommonOptions{
-		MaxSupply:            max_supply * new_precision,
-		MarketFeePercent:     0,
-		MaxMarketFee:         0,
-		Flags:                0,
-		IssuerPermissions:    15,
-		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
-		Description:          String(`{"main":"` + symbol + `","short_name":"","market":""}`),
-		Extensions:           []interface{}{},
+		MaxSupply:         max_supply * new_precision,
+		MarketFeePercent:  0,
+		MaxMarketFee:      0,
+		Flags:             0,
+		IssuerPermissions: 15,
+		//CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
+		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
+		Extensions:  []interface{}{},
 	}
 	AssetData := &CreateAssetData{
 		Extensions:        []interface{}{},
@@ -256,9 +257,7 @@ func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 		Symbol:            String(symbol),
 		CommonOptionsData: cm_op,
 	}
-	//rpc.GetRequireFeeData(8, AssetData)
-	//st := wallet.CreateSignTransaction(8, Wallet.Default.GetActiveKey(), AssetData)
-	return Wallet.SignAndSendTX(8, AssetData)
+	return Wallet.SignAndSendTX(OP_CREATE_ASSET_TOKEN, AssetData)
 }
 
 /*发行人 可以领取累计的手续费*/
@@ -342,7 +341,7 @@ func IssueToken(symbol, issue_to_account string, amount float64) error {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
 	precision := math.Pow10(asset_info.Precision)
 	issue := &IssueAsset{
-		Fee:            EmptyFee(),
+		//Fee:            EmptyFee(),
 		Extensions:     []interface{}{},
 		Issuer:         ObjectId(Wallet.Default.Info.ID),
 		IssueToAccount: ObjectId(to_info.ID),

@@ -17,6 +17,13 @@ const LOCAL = "192.168.0.166"
 
 var _ = rpc.InitClient(TEST_NET, 8049, false)
 
+func TestMemo(t *testing.T) {
+	prk := PrkFromBase58String("5HqGVLJ2zN5tJw7JNKsc8e25Gadn5GYiwkEde3XrhUN3D1pZx2P")
+
+	puk := PukFromBase58String("COCOS6qF5SzyYRcnEiHjF3zF143LSyyvGRcs1tYMc5iBTvWJGHhb39V")
+	EncodeMemo()
+}
+
 func TestPrk(t *testing.T) {
 	//elliptic.Curve
 	//elliptic.TestOnCurve()

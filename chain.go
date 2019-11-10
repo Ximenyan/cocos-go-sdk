@@ -23,3 +23,15 @@ func GetBlockHeader(block_hight int) *rpc.BlockHeader {
 func GetTransactionById(txId string) *rpc.TransactinInfo {
 	return rpc.GetTransactionById(txId)
 }
+
+/*查询交易所在的block*/
+func GetTransactionInBlock(txId string) *rpc.TXInBlockInfo {
+	return rpc.GetTransactionInBlock(txId)
+}
+
+/*查询投票信息*/
+
+func GetVotingInfo() []rpc.VotingInfo {
+	v := rpc.GetVotingInfo()
+	return v.GetInfo()
+}

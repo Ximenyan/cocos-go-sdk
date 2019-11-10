@@ -225,8 +225,6 @@ func (w *Wallet) RegisterNhAssetCreator(name string) error {
 	t := &NhAssetCreator{
 		FeePayingAccount: ObjectId(info.ID),
 	}
-	//rpc.GetRequireFeeData(46, t)
-	//st := CreateSignTransaction(46, w.Default.GetActiveKey(), t)
 	return w.SignAndSendTX(OP_NH_CREATOR, t) //rpc.BroadcastTransaction(st)
 }
 

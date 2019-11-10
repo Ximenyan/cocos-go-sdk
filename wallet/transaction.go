@@ -8,6 +8,9 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
+	"log"
+
+	//"log"
 	"math"
 	"math/rand"
 	"strconv"
@@ -24,33 +27,51 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 	to_puk := to_info.GetActivePuKey()
 	from_info := rpc.GetAccountInfoByName(from_name)
 	from_puk := from_info.GetActivePuKey()
-	m_data := CreateMemo(prk, from_puk, to_puk, memo)
+	m_data := EncodeMemo(prk, from_puk, to_puk, memo)
 	tk_info := rpc.GetTokenInfoBySymbol(tk_symbol)
 
 	precision := math.Pow10(tk_info.Precision)
 	t := &Transaction{
-		Fee:            EmptyFee(),
 		AmountData:     Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(tk_info.ID)},
 		ExtensionsData: []interface{}{},
 		From:           ObjectId(from_info.ID),
 		To:             ObjectId(to_info.ID),
-		MemoData:       m_data,
+		MemoData:       &m_data,
 	}
 	return t
 }
 
-type Operation []interface{}
-
-func (o Operation) GetBytes() []byte {
-	id := int64(o[0].(int))
-	id_data := common.VarInt(id, 8)
-	opData := o[1].(Object)
-	trans_data := opData.GetBytes()
-	byte_s := append(id_data, trans_data...)
-	return byte_s
+func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg string, err error) {
+	msg_byte_s, err := hex.DecodeString(msg)
+	puk := PukFromBase58String(from)
+	x, y := puk.GetPoint()
+	cure := secp256k1.S256()
+	x, y = cure.ScalarMult(x, y, prk.PrivKey)
+	sha := sha512.New()
+	byte_s := x.Bytes()
+	sha.Write(byte_s)
+	resss := sha.Sum(nil)
+	noce_s := strconv.FormatUint(nonce, 10)
+	seed := noce_s + hex.EncodeToString(resss)
+	sha.Reset()
+	sha.Write([]byte(seed))
+	seed_digest := sha.Sum(nil)
+	s256 := sha256.New()
+	s256.Write([]byte(msg))
+	checksum := s256.Sum(nil)
+	byte_s_msg := append(checksum[0:4], []byte(msg)...)
+	num := 16 - len(byte_s_msg)%16
+	for i := 0; i < num && num != 16; i++ {
+		byte_s_msg = append(byte_s_msg, byte(num))
+	}
+	block, _ := aes.NewCipher(seed_digest[0:32])
+	bm := cipher.NewCBCDecrypter(block, seed_digest[32:48])
+	bm.CryptBlocks(msg_byte_s, msg_byte_s)
+	decode_msg = string(msg_byte_s[4:])
+	return
 }
 
-func CreateMemo(prk *PrivateKey, from, to, msg string) Memo {
+func EncodeMemo(prk *PrivateKey, from, to, msg string) Memo {
 	m := Memo{
 		From:    from,
 		To:      to,
@@ -98,7 +119,10 @@ func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
 	t, _ := time.Parse(TIME_FORMAT, o.Expiration)
+	log.Println("t.Unix()", t.Unix())
+	log.Println("uint64(t.Unix()", uint64(t.Unix()))
 	expiration_data := common.VarUint(uint64(t.Unix()), 32)
+	log.Println("expiration_data", expiration_data)
 	operations_data := common.Varint(uint64(len(o.Operations)))
 	for _, op := range o.Operations {
 		operations_data = append(operations_data, op.GetBytes()...)
@@ -117,10 +141,12 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Tran
 	}
 	op := Operation{opID, t}
 	dgp := rpc.GetDynamicGlobalProperties()
+	//unix_time := time.Now().Unix()
+	//log.Println("unix_time", unix_time)
 	st = &Signed_Transaction{
 		RefBlockNum:    dgp.Get_ref_block_num(),
 		RefBlockPrefix: dgp.Get_ref_block_prefix(),
-		Expiration:     time.Unix(time.Now().Unix(), 0).Format(TIME_FORMAT),
+		Expiration:     time.Now().Format(TIME_FORMAT),
 		Operations:     []Operation{op},
 		ExtensionsData: []interface{}{},
 		Signatures:     []string{},
@@ -131,6 +157,7 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Tran
 		return nil, err
 	}
 	byte_s = append(cid, byte_s...)
+	log.Println(hex.EncodeToString(byte_s))
 	msg := sha256digest(byte_s)
 	st.Signatures = append(st.Signatures, prk.Sign(msg))
 	return st, nil

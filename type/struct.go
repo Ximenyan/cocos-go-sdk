@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/big"
 	"strconv"
 	"strings"
@@ -45,7 +46,13 @@ type ObjectId string
 func (o ObjectId) GetBytes() []byte {
 	num := strings.Split(string(o), `.`)[2]
 	i, _ := strconv.ParseUint(num, 10, 64)
-	return common.Varint(i)
+	return common.VarUint(i, 64)
+	//return common.Varint(i)
+}
+func (o ObjectId) GetSn() int64 {
+	num := strings.Split(string(o), `.`)[2]
+	i, _ := strconv.ParseUint(num, 10, 64)
+	return int64(i)
 }
 
 type Optional ObjectId
@@ -94,6 +101,7 @@ func (o Memo) GetBytes() []byte {
 			append(to,
 				append(nonce, msg...)...)...)...,
 	)
+	log.Println("memoto +++++++++++++", byte_s)
 	return byte_s
 }
 
@@ -406,7 +414,7 @@ type KeyInfo struct {
 	WeightThreshold int64         `json:"weight_threshold"`
 	AccountAuths    []interface{} `json:"account_auths"`
 	KeyAuths        [][]string    `json:"key_auths"`
-	ExtensionsData  Extensions    `json:"extensions"`
+	ExtensionsData  Extensions    `json:"address_auths"`
 }
 
 func (o KeyInfo) GetBytes() []byte {
@@ -434,30 +442,30 @@ type Options struct {
 }
 
 func (o Options) GetBytes() []byte {
-	nc_data := common.VarInt(o.NumCommittee, 16)
-	nw_data := common.VarInt(o.NumWitness, 16)
+	//nc_data := common.VarInt(o.NumCommittee, 16)
+	//nw_data := common.VarInt(o.NumWitness, 16)
 	mk_data := PukBytesFromBase58String(o.MemoKey)
 	votes_data := []byte{0x00}
-	va_data := o.VotingAccount.GetBytes()
+	//va_data := o.VotingAccount.GetBytes()
 	extensions_data := o.ExtensionsData.GetBytes()
 	byte_s := append(mk_data,
-		append(va_data,
-			append(nw_data,
-				append(nc_data,
-					append(votes_data, extensions_data...)...)...)...)...)
+		//append(va_data,
+		//append(nw_data,
+		//append(nc_data,
+		append(votes_data,
+			extensions_data...)...) //...)...)...)
 	return byte_s
 }
 
 type String string
 
 func (o String) GetBytes() []byte {
-	byte_s := append([]byte{byte(len(o))}, []byte(o)...)
+	byte_s := append(common.Varint(uint64(len(o))), []byte(o)...)
 	return byte_s
 }
 
 type RegisterData struct {
-	Fee
-	Referrer        ObjectId   `json:"referrer"`
+	//Referrer        ObjectId   `json:"referrer"`
 	ExtensionsData  Extensions `json:"extensions"`
 	Active          KeyInfo    `json:"active"`
 	OptionsData     Options    `json:"options"`
@@ -469,9 +477,9 @@ type RegisterData struct {
 
 func (o RegisterData) GetBytes() []byte {
 
-	referrer_data := o.Referrer.GetBytes()
+	//referrer_data := o.Referrer.GetBytes()
 	registrar_data := o.Registrar.GetBytes()
-	referrer_percent_data := common.VarInt(o.ReferrerPercent, 16)
+	//referrer_percent_data := common.VarInt(o.ReferrerPercent, 16)
 	name_data := o.Name.GetBytes()
 	owner_data := o.Owner.GetBytes()
 	active_data := o.Active.GetBytes()
@@ -479,12 +487,12 @@ func (o RegisterData) GetBytes() []byte {
 	extensions_data := o.ExtensionsData.GetBytes()
 	byte_s :=
 		append(registrar_data,
-			append(referrer_data,
-				append(referrer_percent_data,
-					append(name_data,
-						append(owner_data,
-							append(active_data,
-								append(op_data, extensions_data...)...)...)...)...)...)...)
+			//append(referrer_data,
+			//append(referrer_percent_data,
+			append(name_data,
+				append(owner_data,
+					append(active_data,
+						append(op_data, extensions_data...)...)...)...)...) //...)...)
 	return byte_s
 }
 
@@ -504,23 +512,23 @@ func CreateRegisterData(active_PubKey, owner_PubKey, name, referrer, registrar s
 	}
 	opData := Options{
 		ExtensionsData: []interface{}{},
-		NumWitness:     0,
-		NumCommittee:   0,
-		MemoKey:        active_PubKey,
-		Votes:          []interface{}{},
-		VotingAccount:  ObjectId(registrar),
+		//NumWitness:     0,
+		//NumCommittee:   0,
+		MemoKey: active_PubKey,
+		Votes:   []interface{}{},
+		//VotingAccount:  ObjectId(registrar),
 	}
 	r := &RegisterData{
-		Referrer:        ObjectId(referrer),
-		Registrar:       ObjectId(registrar),
-		Name:            String(name),
-		ExtensionsData:  []interface{}{},
-		Active:          active_key,
-		Owner:           owner_key,
-		ReferrerPercent: 5000,
-		OptionsData:     opData,
+		//Referrer:        ObjectId(referrer),
+		Registrar:      ObjectId(registrar),
+		Name:           String(name),
+		ExtensionsData: []interface{}{},
+		Active:         active_key,
+		Owner:          owner_key,
+		//ReferrerPercent: 5000,
+		OptionsData: opData,
 	}
-	r.FeeData = Amount{Amount: 0, AssetID: "1.3.0"}
+	//r.FeeData = Amount{Amount: 0, AssetID: "1.3.0"}
 	return r
 }
 
@@ -535,14 +543,14 @@ func (o CoreExchangeRate) GetBytes() []byte {
 }
 
 type CommonOptions struct {
-	MaxSupply            uint64           `json:"max_supply"`
-	MarketFeePercent     uint64           `json:"market_fee_percent"`
-	MaxMarketFee         uint64           `json:"max_market_fee"`
-	IssuerPermissions    uint64           `json:"issuer_permissions"`
-	Flags                uint64           `json:"flags"`
-	CoreExchangeRateData CoreExchangeRate `json:"core_exchange_rate"`
-	Description          String           `json:"description"`
-	Extensions           Extensions       `json:"extensions"`
+	MaxSupply         uint64 `json:"max_supply"`
+	MarketFeePercent  uint64 `json:"market_fee_percent"`
+	MaxMarketFee      uint64 `json:"max_market_fee"`
+	IssuerPermissions uint64 `json:"issuer_permissions"`
+	Flags             uint64 `json:"flags"`
+	//CoreExchangeRateData CoreExchangeRate `json:"core_exchange_rate"`
+	Description String     `json:"description"`
+	Extensions  Extensions `json:"extensions"`
 }
 
 func (o CommonOptions) GetBytes() []byte {
@@ -550,8 +558,8 @@ func (o CommonOptions) GetBytes() []byte {
 	MarketFeePercent_data := common.VarUint(o.MarketFeePercent, 16)
 	MaxMarketFee_data := common.VarUint(o.MaxMarketFee, 64)
 	IssuerPermissions_data := common.VarUint(o.IssuerPermissions, 16)
-	Flags_data := common.VarUint(o.Flags, 16)
-	CoreExchangeRate_data := o.CoreExchangeRateData.GetBytes()
+	Flags_data := common.VarUint(o.Flags, 24)
+	//CoreExchangeRate_data := o.CoreExchangeRateData.GetBytes()
 	des_data := o.Description.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
 	byte_s := append(MaxSupply_data,
@@ -559,13 +567,14 @@ func (o CommonOptions) GetBytes() []byte {
 			append(MaxMarketFee_data,
 				append(IssuerPermissions_data,
 					append(Flags_data,
-						append(CoreExchangeRate_data,
-							append(des_data, extensions_data...)...)...)...)...)...)...)
+						//append(CoreExchangeRate_data,
+						append(des_data, extensions_data...)...)...)...)...)...) //...)
 	return byte_s
 }
 
 /*创建代币的数据结构*/
 type CreateAssetData struct {
+	//Fee
 	Issuer            ObjectId      `json:"issuer"`
 	Symbol            String        `json:"symbol"`
 	Precision         uint64        `json:"precision"`
@@ -574,17 +583,19 @@ type CreateAssetData struct {
 }
 
 func (o CreateAssetData) GetBytes() []byte {
+	//fee_data := o.FeeData.GetBytes()
 	issuer_data := o.Issuer.GetBytes()
 	symbol_data := o.Symbol.GetBytes()
 	precision_data := common.VarUint(o.Precision, 8)
 	cod_data := o.CommonOptionsData.GetBytes()
 	bo_data := common.VarUint(0, 8)
 	extensions_data := o.Extensions.GetBytes()
-	byte_s := append(issuer_data,
-		append(symbol_data,
-			append(precision_data,
-				append(cod_data,
-					append(bo_data, extensions_data...)...)...)...)...)
+	byte_s := //append(fee_data,
+		append(issuer_data,
+			append(symbol_data,
+				append(precision_data,
+					append(cod_data,
+						append(bo_data, extensions_data...)...)...)...)...) //...)
 	return byte_s
 }
 
@@ -623,12 +634,12 @@ type IssueAsset struct {
 }
 
 func (o IssueAsset) GetBytes() []byte {
-	byte_s := append(o.FeeData.GetBytes(),
+	byte_s := //append(o.FeeData.GetBytes(),
 		append(o.Issuer.GetBytes(),
 			append(o.AssetToIssue.GetBytes(),
 				append(o.IssueToAccount.GetBytes(),
 					append([]byte{0x0},
-						o.Extensions.GetBytes()...)...)...)...)...)
+						o.Extensions.GetBytes()...)...)...)...) //...)
 	return byte_s
 }
 
@@ -640,10 +651,10 @@ type ReserveTokenData struct {
 }
 
 func (o ReserveTokenData) GetBytes() []byte {
-	byte_s := append(o.FeeData.GetBytes(),
+	byte_s :=
 		append(o.Payer.GetBytes(),
 			append(o.AmountToReserve.GetBytes(),
-				o.Extensions.GetBytes()...)...)...)
+				o.Extensions.GetBytes()...)...)
 	return byte_s
 }
 
@@ -680,20 +691,31 @@ func (o TokenFeePoolData) GetBytes() []byte {
 }
 
 type Transaction struct {
-	Fee
 	From           ObjectId   `json:"from"`
 	To             ObjectId   `json:"to"`
 	AmountData     Amount     `json:"amount"`
-	MemoData       Memo       `json:"memo"`
+	MemoData       *Memo      `json:"memo,omitempty"`
 	ExtensionsData Extensions `json:"extensions"`
 }
+type Operation []interface{}
 
+func (o Operation) GetBytes() []byte {
+	id := int64(o[0].(int))
+	id_data := common.VarInt(id, 8)
+	opData := o[1].(Object)
+	trans_data := opData.GetBytes()
+	byte_s := append(id_data, trans_data...)
+	return byte_s
+}
 func (o Transaction) GetBytes() []byte {
 
 	from_data := o.From.GetBytes()
 	to_data := o.To.GetBytes()
 	amount_data := o.AmountData.GetBytes()
-	memo_data := o.MemoData.GetBytes()
+	memo_data := []byte{0}
+	if o.MemoData != nil {
+		memo_data = o.MemoData.GetBytes()
+	}
 	extensions_data := o.ExtensionsData.GetBytes()
 	byte_s :=
 		append(from_data,
