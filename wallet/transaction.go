@@ -132,7 +132,7 @@ func (o Signed_Transaction) GetBytes() []byte {
 	return byte_s
 }
 
-func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Transaction, err error) {
+func CreateSignTransaction(opID int, t Object, prk ...*PrivateKey) (st *Signed_Transaction, err error) {
 	if prk == nil {
 		return nil, errors.New("private key is nil!!")
 	}
@@ -153,7 +153,9 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Tran
 	}
 	byte_s = append(cid, byte_s...)
 	msg := sha256digest(byte_s)
-	st.Signatures = append(st.Signatures, prk.Sign(msg))
+	for _, k := range prk {
+		st.Signatures = append(st.Signatures, k.Sign(msg))
+	}
 	return st, nil
 }
 

@@ -41,6 +41,6 @@ func TestTransfer(t *testing.T) {
 	//ReviseContractByFile("contract.test12343", "./test.lua")
 	//TransferNhAsset("gggg2", "4.2.2")
 	//TokenFundFeePool("COCOS", 1000)
-	err := VoteWitness("1.5.6", 10)
+	err := Vote("1.5.6", 10)
 	t.Log(err)
 }

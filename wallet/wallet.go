@@ -249,8 +249,11 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 	}
 	return errors.New("no account name:" + name)
 }
-func (w *Wallet) SignAndSendTX(opID int, t Object) error {
-	if st, err := CreateSignTransaction(opID, w.Default.GetActiveKey(), t); err != nil {
+func (w *Wallet) SignAndSendTX(opID int, t Object, prk ...*PrivateKey) error {
+	if len(prk) <= 0 {
+		prk = []*PrivateKey{w.Default.GetActiveKey()}
+	}
+	if st, err := CreateSignTransaction(opID, t, prk...); err != nil {
 		return err
 	} else {
 		return rpc.BroadcastTransaction(st)
