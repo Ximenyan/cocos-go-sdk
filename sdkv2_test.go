@@ -12,9 +12,9 @@ func TestInitSdk2(t *testing.T) {
 
 func TestWallet(t *testing.T) {
 	//导入账户
-	Wallet.ImportAccount("gggg2", "12345678")
+	Wallet.ImportAccount("gggg1", "12345678")
 	//设置默认账户
-	Wallet.SetDefaultAccount("gggg2", "12345678")
+	Wallet.SetDefaultAccount("gggg1", "12345678")
 }
 
 func TestTransfer(t *testing.T) {
@@ -30,7 +30,7 @@ func TestTransfer(t *testing.T) {
 	//ReserveToken("C4C4S", 1)
 	//Wallet.RegisterNhAssetCreator("gggg2")
 	//UpdateToken("C5C5S", 10000000, 3)
-	//Pledgegas("gggg1", "ximenyan1111", 20.1)
+	//Pledgegas("gggg1", "ximenyan1111", 0)
 	//CreateWorldView("BCX")
 	//RelateWorldView("BCX")
 	//CreateNhAsset("COCOS", "BCX", "gggg1", `{"name":"乾坤大挪移"}`)
@@ -41,6 +41,7 @@ func TestTransfer(t *testing.T) {
 	//ReviseContractByFile("contract.test12343", "./test.lua")
 	//TransferNhAsset("gggg2", "4.2.2")
 	//TokenFundFeePool("COCOS", 1000)
-	err := Vote("1.5.6", 10)
+	//err := Vote("1.5.6", 10)
+	err := WithdrawVestingBalance("1.13.18")
 	t.Log(err)
 }

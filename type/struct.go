@@ -180,7 +180,6 @@ func (o OPS) MarshalJSON() ([]byte, error) {
 }
 
 type RelatedWorldView struct {
-	Fee
 	FeePayingAccount    ObjectId    `json:"fee_paying_account"`
 	ExpirationTime      Expiration  `json:"expiration_time"`
 	ProposedOps         []OPS       `json:"proposed_ops"`
@@ -627,7 +626,6 @@ func (o CreateAssetData) GetBytes() []byte {
 
 /*创建代币的数据结构*/
 type UpdateAssetData struct {
-	Fee
 	AssetToUpdate  ObjectId      `json:"asset_to_update"`
 	Issuer         ObjectId      `json:"issuer"`
 	NewIssuer      Optional      `json:"new_issuer,omitempty"`
@@ -636,23 +634,20 @@ type UpdateAssetData struct {
 }
 
 func (o UpdateAssetData) GetBytes() []byte {
-
 	issuer_data := o.Issuer.GetBytes()
 	new_issuer_data := o.NewIssuer.GetBytes()
 	asset_data := o.AssetToUpdate.GetBytes()
 	cod_data := o.NewOptionsData.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s :=
-		append(issuer_data,
-			append(asset_data,
-				append(new_issuer_data,
-					append(cod_data, extensions_data...)...)...)...)
+	byte_s := append(issuer_data,
+		append(asset_data,
+			append(new_issuer_data,
+				append(cod_data, extensions_data...)...)...)...)
 	return byte_s
 }
 
 /*创建發行代币的数据结构*/
 type IssueAsset struct {
-	Fee
 	Issuer         ObjectId   `json:"issuer"`
 	AssetToIssue   Amount     `json:"asset_to_issue"`
 	IssueToAccount ObjectId   `json:"issue_to_account"`
@@ -660,12 +655,11 @@ type IssueAsset struct {
 }
 
 func (o IssueAsset) GetBytes() []byte {
-	byte_s := //append(o.FeeData.GetBytes(),
-		append(o.Issuer.GetBytes(),
-			append(o.AssetToIssue.GetBytes(),
-				append(o.IssueToAccount.GetBytes(),
-					append([]byte{0x0},
-						o.Extensions.GetBytes()...)...)...)...) //...)
+	byte_s := append(o.Issuer.GetBytes(),
+		append(o.AssetToIssue.GetBytes(),
+			append(o.IssueToAccount.GetBytes(),
+				append([]byte{0x0},
+					o.Extensions.GetBytes()...)...)...)...) //...)
 	return byte_s
 }
 
@@ -673,7 +667,6 @@ type ReserveTokenData struct {
 	Extensions      Extensions `json:"extensions"`
 	Payer           ObjectId   `json:"payer"`
 	AmountToReserve Amount     `json:"amount_to_reserve"`
-	Fee
 }
 
 func (o ReserveTokenData) GetBytes() []byte {
@@ -685,17 +678,15 @@ func (o ReserveTokenData) GetBytes() []byte {
 }
 
 type ClaimTokenFees struct {
-	Fee
 	Issuer        ObjectId   `json:"issuer"`
 	AmountToClaim Amount     `json:"amount_to_claim"`
 	Extensions    Extensions `json:"extensions"`
 }
 
 func (o ClaimTokenFees) GetBytes() []byte {
-	byte_s := append(o.FeeData.GetBytes(),
-		append(o.Issuer.GetBytes(),
-			append(o.AmountToClaim.GetBytes(),
-				o.Extensions.GetBytes()...)...)...)
+	byte_s := append(o.Issuer.GetBytes(),
+		append(o.AmountToClaim.GetBytes(),
+			o.Extensions.GetBytes()...)...)
 	return byte_s
 }
 
@@ -750,7 +741,6 @@ func (o Transaction) GetBytes() []byte {
 }
 
 type CallData struct {
-	Fee
 	Caller       ObjectId   `json:"caller"`
 	ContractID   ObjectId   `json:"contract_id"`
 	FunctionName String     `json:"function_name"`
@@ -797,7 +787,6 @@ func (o CreateContractData) GetBytes() []byte {
 }
 
 type UpdateContractData struct {
-	Fee
 	Reviser    ObjectId   `json:"reviser"`
 	ContractID ObjectId   `json:"contract_id"`
 	Extensions Extensions `json:"extensions"`
@@ -805,15 +794,13 @@ type UpdateContractData struct {
 }
 
 func (o UpdateContractData) GetBytes() []byte {
-
 	contract_id_data := o.ContractID.GetBytes()
 	reviser_data := o.Reviser.GetBytes()
 	data_data := o.Data.GetBytes()
 	extensions_data := o.Extensions.GetBytes()
-	byte_s :=
-		append(reviser_data,
-			append(contract_id_data,
-				append(data_data, extensions_data...)...)...)
+	byte_s := append(reviser_data,
+		append(contract_id_data,
+			append(data_data, extensions_data...)...)...)
 	return byte_s
 }
 

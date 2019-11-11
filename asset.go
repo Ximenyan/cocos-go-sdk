@@ -156,7 +156,7 @@ func CreateWorldView(name string) error {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	world_view := &WorldView{
-		Fee:              EmptyFee(),
+		//Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		WorldView:        String(name),
 	}
@@ -189,7 +189,6 @@ func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...stri
 		newIssuer = EMPTY_ID
 	}
 	AssetData := &UpdateAssetData{
-		Fee:            EmptyFee(),
 		Extensions:     []interface{}{},
 		NewIssuer:      Optional(newIssuer),
 		Issuer:         ObjectId(Wallet.Default.Info.ID),
@@ -211,7 +210,6 @@ func ReserveToken(symbol string, amount float64) error {
 		Extensions:      []interface{}{},
 		Payer:           ObjectId(Wallet.Default.Info.ID),
 		AmountToReserve: Amount{Amount: uint64(float64(amount) * precision), AssetID: ObjectId(asset_info.ID)},
-		Fee:             EmptyFee(),
 	}
 	return Wallet.SignAndSendTX(OP_RESERVE_TOKEN, AssetData)
 }
@@ -251,7 +249,6 @@ func ClaimFees(symbol string, value float64) error {
 		Extensions:    []interface{}{},
 		Issuer:        ObjectId(Wallet.Default.Info.ID),
 		AmountToClaim: Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(asset_info.ID)},
-		Fee:           EmptyFee(),
 	}
 	return Wallet.SignAndSendTX(OP_CLAIM_FEES, ctf)
 }
@@ -285,6 +282,7 @@ func Pledgegas(mortgager, beneficiary string, collateral float64) error {
 	return Wallet.SignAndSendTX(OP_PLEDGE_GAS, p)
 }
 
+/*
 func CreateVestingBalance(symbol string, amount float64) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
@@ -303,7 +301,7 @@ func CreateVestingBalance(symbol string, amount float64) error {
 		Creator: ObjectId(Wallet.Default.Info.ID),
 	}
 	return Wallet.SignAndSendTX(OP_VESTING_CREATE, v)
-}
+}*/
 
 func WithdrawVestingBalance(balance_id string) error {
 	if Wallet.Default.Info == nil {
