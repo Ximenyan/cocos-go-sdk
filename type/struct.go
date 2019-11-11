@@ -906,40 +906,6 @@ func (o NewOptions) GetBytes() []byte {
 	return byte_s
 }
 
-type V1NewOptions struct {
-	MemoKey       string     `json:"memo_key"`
-	VotingAccount ObjectId   `json:"voting_account"`
-	NumWitness    Int16      `json:"num_witness"`
-	NumCommittee  Int16      `json:"num_committee"`
-	Votes         Array      `json:"votes"`
-	Extensions    Extensions `json:"extensions"`
-}
-
-func (o V1NewOptions) GetBytes() []byte {
-	byte_s := append(PukBytesFromBase58String(o.MemoKey),
-		append(o.VotingAccount.GetBytes(),
-			append(o.NumWitness.GetBytes(),
-				append(o.NumCommittee.GetBytes(),
-					append(o.Votes.GetBytes(),
-						o.Extensions.GetBytes()...)...)...)...)...)
-	return byte_s
-}
-
-type V1VoteData struct {
-	Account    ObjectId     `json:"account"`
-	NewOptions V1NewOptions `json:"new_options"`
-	Extensions Extensions   `json:"extensions"`
-}
-
-func (o V1VoteData) GetBytes() []byte {
-	byte_s := //append(o.LockWithVote.GetBytes(),
-		append(o.Account.GetBytes(),
-			//append([]byte{0, 0, 1},
-			append(o.NewOptions.GetBytes(),
-				o.Extensions.GetBytes()...)...) //...)//...)
-	return byte_s
-}
-
 type VoteData struct {
 	LockWithVote OPArray    `json:"lock_with_vote"`
 	Account      ObjectId   `json:"account"`

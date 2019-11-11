@@ -177,8 +177,8 @@ func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...stri
 		MaxMarketFee:      0,
 		Flags:             0,
 		IssuerPermissions: 79,
-		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
-		Extensions:  []interface{}{},
+		Description:       String(`{"main":"` + symbol + `","short_name":"","market":""}`),
+		Extensions:        []interface{}{},
 	}
 	var newIssuer ObjectId
 	if len(new_issuer) >= 1 {
@@ -229,8 +229,8 @@ func CreateToken(symbol string, max_supply, precision uint64) error {
 		MaxMarketFee:      0,
 		Flags:             0,
 		IssuerPermissions: 79,
-		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
-		Extensions:  []interface{}{},
+		Description:       String(`{"main":"` + symbol + `","short_name":"","market":""}`),
+		Extensions:        []interface{}{},
 	}
 	AssetData := &CreateAssetData{
 		Extensions:        []interface{}{},
@@ -341,8 +341,8 @@ func IssueToken(symbol, issue_to_account string, amount float64) error {
 	return Wallet.SignAndSendTX(OP_ISSUE_TOKEN, issue)
 }
 
-//见证人投票
-func VoteWitness(id string, value float64) error {
+//投票
+func Vote(id string, value float64) error {
 	tk_info := rpc.GetTokenInfo(COCOS_ID)
 	precision := math.Pow10(tk_info.Precision)
 	info := rpc.GetObject(id)
@@ -359,30 +359,7 @@ func VoteWitness(id string, value float64) error {
 			Extensions: Extensions{}},
 		Extensions: Extensions{},
 	}
-	return Wallet.SignAndSendTX(OP_VOTE, v)
-}
-
-func VoteWitnessV1(id string, value float64) error {
-	//tk_info := rpc.GetTokenInfo(COCOS_ID)
-	//precision := math.Pow10(tk_info.Precision)
-	info := rpc.GetObject(id)
-
-	if Wallet.Default.Info == nil {
-		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
-	}
-	v := &V1VoteData{
-		//LockWithVote: OPArray{Int32(0), Amount{Amount: uint64(value * precision), AssetID: COCOS_ID}},
-		Account: ObjectId(Wallet.Default.Info.ID),
-		NewOptions: V1NewOptions{
-			MemoKey:       Wallet.Default.GetMemoKey().GetPublicKey().ToBase58String(),
-			Votes:         Array{VoteId(info.Get("vote_id").String())},
-			VotingAccount: ObjectId(id),
-			NumWitness:    Int16(1),
-			NumCommittee:  Int16(0),
-			Extensions:    Extensions{}},
-		Extensions: Extensions{},
-	}
-	return Wallet.SignAndSendTX(OP_VOTE, v)
+	return Wallet.SignAndSendTX(OP_VOTE, v, Wallet.Default.GetActiveKey(), Wallet.Default.GetOwnerKey())
 }
 
 /*查询订单信息*/
