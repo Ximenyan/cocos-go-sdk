@@ -74,7 +74,7 @@ func (o Expiration) GetBytes() []byte {
 }
 
 type Amount struct {
-	Amount  uint64   `json:"amount"`
+	Amount  uint64   `json:"amount,string"`
 	AssetID ObjectId `json:"asset_id"`
 }
 
@@ -136,7 +136,6 @@ func (o NhAssetCreator) GetBytes() []byte {
 }
 
 type WorldView struct {
-	Fee
 	FeePayingAccount ObjectId `json:"fee_paying_account"`
 	WorldView        String   `json:"world_view"`
 }
@@ -208,6 +207,30 @@ func (o RelatedWorldView) GetBytes() []byte {
 	return byte_s
 }
 
+type Int8 uint64
+
+func (o Int8) GetBytes() []byte {
+	return common.VarUint(uint64(o), 8)
+}
+
+type Int16 uint64
+
+func (o Int16) GetBytes() []byte {
+	return common.VarUint(uint64(o), 16)
+}
+
+type Int32 uint64
+
+func (o Int32) GetBytes() []byte {
+	return common.VarUint(uint64(o), 32)
+}
+
+type Int64 uint64
+
+func (o Int64) GetBytes() []byte {
+	return common.VarUint(uint64(o), 64)
+}
+
 type Array []Object
 
 func (o Array) GetBytes() []byte {
@@ -218,8 +241,17 @@ func (o Array) GetBytes() []byte {
 	return byte_s
 }
 
+type OPArray []Object
+
+func (o OPArray) GetBytes() []byte {
+	byte_s := common.Varint(uint64(len(o) - 1))
+	for i := 0; i < len(o); i++ {
+		byte_s = append(byte_s, o[i].GetBytes()...)
+	}
+	return byte_s
+}
+
 type Approvals struct {
-	Fee
 	FeePayingAccount        ObjectId   `json:"fee_paying_account"`
 	Proposal                ObjectId   `json:"proposal"`
 	ActiveApprovalsToAdd    Array      `json:"active_approvals_to_add"`
@@ -254,7 +286,6 @@ func (o Approvals) GetBytes() []byte {
 }
 
 type NhAsset struct {
-	Fee
 	Owner            ObjectId `json:"owner"`
 	BaseDescribe     String   `json:"base_describe"`
 	AssetID          String   `json:"asset_id"`
@@ -263,7 +294,6 @@ type NhAsset struct {
 }
 
 func (o NhAsset) GetBytes() []byte {
-
 	fpa_data := o.FeePayingAccount.GetBytes()
 	owner_data := o.Owner.GetBytes()
 	asset_data := o.AssetID.GetBytes()
@@ -277,14 +307,12 @@ func (o NhAsset) GetBytes() []byte {
 }
 
 type TransferNh struct {
-	Fee
 	From    ObjectId `json:"from"`
 	To      ObjectId `json:"to"`
 	NhAsset ObjectId `json:"nh_asset"`
 }
 
 func (o TransferNh) GetBytes() []byte {
-
 	from_data := o.From.GetBytes()
 	to_data := o.To.GetBytes()
 	nh_asset_data := o.NhAsset.GetBytes()
@@ -674,19 +702,17 @@ func (o ClaimTokenFees) GetBytes() []byte {
 }
 
 type TokenFeePoolData struct {
-	AssetID ObjectId `json:"asset_id"`
-	Fee
+	AssetID     ObjectId   `json:"asset_id"`
 	FromAccount ObjectId   `json:"from_account"`
 	Extensions  Extensions `json:"extensions"`
 	Amount      uint64     `json:"amount"`
 }
 
 func (o TokenFeePoolData) GetBytes() []byte {
-	byte_s := append(o.FeeData.GetBytes(),
-		append(o.FromAccount.GetBytes(),
-			append(o.AssetID.GetBytes(),
-				append(common.VarUint(o.Amount, 64),
-					o.Extensions.GetBytes()...)...)...)...)
+	byte_s := append(o.FromAccount.GetBytes(),
+		append(o.AssetID.GetBytes(),
+			append(common.VarUint(o.Amount, 64),
+				o.Extensions.GetBytes()...)...)...)
 	return byte_s
 }
 
@@ -817,33 +843,81 @@ func (o Policy) GetBytes() []byte {
 }
 
 type VestingBalanceCreate struct {
-	Policy Policy   `json:"policy"`
-	Owner  ObjectId `json:"owner"`
-	Amount Amount   `json:"amount"`
-	Fee
+	Policy  Policy   `json:"policy"`
+	Owner   ObjectId `json:"owner"`
+	Amount  Amount   `json:"amount"`
 	Creator ObjectId `json:"creator"`
 }
 
 func (o VestingBalanceCreate) GetBytes() []byte {
-	byte_s := append(o.FeeData.GetBytes(),
-		append(o.Creator.GetBytes(),
-			append(o.Owner.GetBytes(),
-				append(o.Amount.GetBytes(),
-					o.Policy.GetBytes()...)...)...)...)
+	byte_s := append(o.Creator.GetBytes(),
+		append(o.Owner.GetBytes(),
+			append(o.Amount.GetBytes(),
+				o.Policy.GetBytes()...)...)...)
+	return byte_s
+}
+
+type PledgeGas struct {
+	Mortgager   ObjectId `json:"mortgager"`
+	Beneficiary ObjectId `json:"beneficiary"`
+	Collateral  uint64   `json:"collateral"`
+}
+
+func (o PledgeGas) GetBytes() []byte {
+	byte_s := append(o.Mortgager.GetBytes(),
+		append(o.Beneficiary.GetBytes(),
+			common.VarUint(o.Collateral, 64)...)...)
 	return byte_s
 }
 
 type VestingBalanceWithdraw struct {
-	Fee
 	Owner          ObjectId `json:"owner"`
 	Amount         Amount   `json:"amount"`
 	VestingBalance ObjectId `json:"vesting_balance"`
 }
 
 func (o VestingBalanceWithdraw) GetBytes() []byte {
-	byte_s := append(o.FeeData.GetBytes(),
-		append(o.VestingBalance.GetBytes(),
-			append(o.Owner.GetBytes(),
-				o.Amount.GetBytes()...)...)...)
+	byte_s := append(o.VestingBalance.GetBytes(),
+		append(o.Owner.GetBytes(),
+			o.Amount.GetBytes()...)...)
+	return byte_s
+}
+
+type VoteId string
+
+func (o VoteId) GetBytes() []byte {
+	type_s := strings.Split(string(o), ":")
+	type_num, _ := strconv.ParseInt(type_s[0], 10, 64)
+	instance_num, _ := strconv.ParseInt(type_s[1], 10, 64)
+	nums := (type_num & 0xff) | (instance_num << 8)
+	return common.VarUint(uint64(nums), 32)
+}
+
+type NewOptions struct {
+	MemoKey    string     `json:"memo_key"`
+	Votes      Array      `json:"votes"`
+	Extensions Extensions `json:"extensions"`
+}
+
+func (o NewOptions) GetBytes() []byte {
+	byte_s := append(PukBytesFromBase58String(o.MemoKey),
+		append(o.Votes.GetBytes(),
+			o.Extensions.GetBytes()...)...)
+	return byte_s
+}
+
+type VoteData struct {
+	LockWithVote OPArray    `json:"lock_with_vote"`
+	Account      ObjectId   `json:"account"`
+	NewOptions   NewOptions `json:"new_options"`
+	Extensions   Extensions `json:"extensions"`
+}
+
+func (o VoteData) GetBytes() []byte {
+	byte_s := append(o.LockWithVote.GetBytes(),
+		append(o.Account.GetBytes(),
+			append([]byte{0, 0, 1},
+				append(o.NewOptions.GetBytes(),
+					o.Extensions.GetBytes()...)...)...)...)
 	return byte_s
 }

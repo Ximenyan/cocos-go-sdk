@@ -8,9 +8,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
-	"log"
-
-	//"log"
+	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -28,6 +26,9 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 	from_info := rpc.GetAccountInfoByName(from_name)
 	from_puk := from_info.GetActivePuKey()
 	m_data := EncodeMemo(prk, from_puk, to_puk, memo)
+	if memo == "" {
+		m_data = nil
+	}
 	tk_info := rpc.GetTokenInfoBySymbol(tk_symbol)
 
 	precision := math.Pow10(tk_info.Precision)
@@ -36,7 +37,7 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 		ExtensionsData: []interface{}{},
 		From:           ObjectId(from_info.ID),
 		To:             ObjectId(to_info.ID),
-		MemoData:       &m_data,
+		MemoData:       m_data,
 	}
 	return t
 }
@@ -71,8 +72,8 @@ func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg str
 	return
 }
 
-func EncodeMemo(prk *PrivateKey, from, to, msg string) Memo {
-	m := Memo{
+func EncodeMemo(prk *PrivateKey, from, to, msg string) *Memo {
+	m := &Memo{
 		From:    from,
 		To:      to,
 		Message: msg,
@@ -119,10 +120,7 @@ func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
 	t, _ := time.Parse(TIME_FORMAT, o.Expiration)
-	log.Println("t.Unix()", t.Unix())
-	log.Println("uint64(t.Unix()", uint64(t.Unix()))
 	expiration_data := common.VarUint(uint64(t.Unix()), 32)
-	log.Println("expiration_data", expiration_data)
 	operations_data := common.Varint(uint64(len(o.Operations)))
 	for _, op := range o.Operations {
 		operations_data = append(operations_data, op.GetBytes()...)
@@ -135,14 +133,12 @@ func (o Signed_Transaction) GetBytes() []byte {
 	return byte_s
 }
 
-func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Transaction, err error) {
+func CreateSignTransaction(opID int, t Object, prk ...*PrivateKey) (st *Signed_Transaction, err error) {
 	if prk == nil {
 		return nil, errors.New("private key is nil!!")
 	}
 	op := Operation{opID, t}
 	dgp := rpc.GetDynamicGlobalProperties()
-	//unix_time := time.Now().Unix()
-	//log.Println("unix_time", unix_time)
 	st = &Signed_Transaction{
 		RefBlockNum:    dgp.Get_ref_block_num(),
 		RefBlockPrefix: dgp.Get_ref_block_prefix(),
@@ -156,10 +152,13 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t Object) (st *Signed_Tran
 	if cid, err = hex.DecodeString(chain.CocosBCXChain.Properties.ChainID); err != nil {
 		return nil, err
 	}
+	fmt.Println(byte_s)
 	byte_s = append(cid, byte_s...)
-	log.Println(hex.EncodeToString(byte_s))
+	fmt.Println(hex.EncodeToString(byte_s))
 	msg := sha256digest(byte_s)
-	st.Signatures = append(st.Signatures, prk.Sign(msg))
+	for _, k := range prk {
+		st.Signatures = append(st.Signatures, k.Sign(msg))
+	}
 	return st, nil
 }
 

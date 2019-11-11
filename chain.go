@@ -2,6 +2,8 @@ package CocosSDK
 
 import (
 	"cocos-go-sdk/rpc"
+
+	"github.com/tidwall/gjson"
 )
 
 /*查询Block*/
@@ -30,8 +32,12 @@ func GetTransactionInBlock(txId string) *rpc.TXInBlockInfo {
 }
 
 /*查询投票信息*/
-
 func GetVotingInfo() []rpc.VotingInfo {
 	v := rpc.GetVotingInfo()
 	return v.GetInfo()
+}
+
+/*查询手续费集合*/
+func GetCurrentFees() map[int64]gjson.Result {
+	return rpc.GetCurrentFees()
 }

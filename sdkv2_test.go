@@ -2,32 +2,46 @@ package CocosSDK
 
 import (
 	//"cocos-go-sdk/wallet"
+	//. "cocos-go-sdk/type"
 	"testing"
 )
 
 func TestInitSdk2(t *testing.T) {
 	InitSDK("123.56.98.47", 80, false)
+	//InitSDK("47.93.62.96", 8049, false)
 	//t.Log(rpc.GetDynamicGlobalProperties())
 }
 
 func TestWallet(t *testing.T) {
-	//Wallet.ImportAccount("ximenyan1111", "xmlcpp123")
-	//Wallet.ImportAccount("gggg1", "12345678")
+	//导入账户
+	//Wallet.ImportAccount("gggg2", "12345678")
+	//设置默认账户
+	Wallet.SetDefaultAccount("gggg2", "12345678")
 }
 
 func TestTransfer(t *testing.T) {
-	//Wallet.SetDefaultAccount("gggg1", "12345678")
 
-	//str, _ := wallet.DecodeMemo(Wallet.Default.GetMemoKey(), "COCOS6wm6Cqmz82xdxsaXMAiffTRaLDNAS4UAEmyGfTxWq5PSCT2ekw", "ba5adaf0feb5ce25254183a0cadb7fe9", 10078031519760515374)
-	//t.Log(str)
-	//Wallet.SetDefaultAccount("ximenyan1111", "xmlcpp123")
-	//t.Log(Wallet.Default.GetActiveKey().ToHexString())
+	//查询投票信息
 	//t.Log(GetVotingInfo())
-	//Wallet.Transfer("ximenyan1111", "COCOS", "sss", 1)
+	//Wallet.Transfer("ximenyan1111", "COCOS", 1, "xixixi")
 	//Wallet.CreateAccount("ccccqwe123", "123345")
 	//Wallet.UpgradeAccount("ximenyan1111")
 	//Wallet.RegisterNhAssetCreator("ximenyan1111")
-	//IssueToken("C1C1S", "ximenyan1111", 123.1)
-	//CreateToken("C3C3S", 1000000, 3)
-	//ReserveToken("C1C1S", 1)
+	//CreateToken("C5C5S", 1000000, 3)
+	//IssueToken("C4C4S", "gggg2", 1000)
+	//ReserveToken("C4C4S", 1)
+	//Wallet.RegisterNhAssetCreator("gggg2")
+	//UpdateToken("C5C5S", 10000000, 3)
+	//Pledgegas("gggg1", "ximenyan1111", 20.1)
+	//CreateWorldView("BCX")
+	//RelateWorldView("BCX")
+	//CreateNhAsset("COCOS", "BCX", "gggg1", `{"name":"乾坤大挪移"}`)
+	//SellNhAsset("ximenyan1111", "4.2.1", "便宜货...", COCOS_ID, COCOS_ID, 5, 100)
+	//CancelNhAssetOrder("4.3.0")
+	//FillNhAsset("4.3.1")
+	//DeleteNhAsset("4.2.0")
+	//ReviseContractByFile("contract.test12343", "./test.lua")
+	//TransferNhAsset("gggg2", "4.2.2")
+	//TokenFundFeePool("COCOS", 1000)
+	VoteWitness("1.5.6", 10)
 }

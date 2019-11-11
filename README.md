@@ -94,15 +94,11 @@ func main() {
 
 #### 创建Token
 ```
-方法：sdk.CreateAsset(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error
+方法：sdk.CreateAsset(symbol string, max_supply, precision, uint64) error
 参数：
 	symbol   token简写
-	asset    基准资产ID
-	_asset	 标价资产ID
 	max_supplay 最大发行量
 	precision   精度
-	amount   基准资产数量
-	_amount  标价资产数量
 	
 ```
 
@@ -116,16 +112,12 @@ func main() {
 ```
 #### Toke更新
 ```
-方法：sdk.UpdateToken(symbol, asset, _asset, new_issuer string, max_supply, precision, amount, _amount uint64) error 
+方法：sdk.UpdateToken(symbol string, max_supply, precision uint64) error 
 参数：
     new_issuer 新发行人
 	symbol   token简写
-	asset    基准资产ID
-	_asset	 标价资产ID
 	max_supplay 最大发行量
 	precision   精度
-	amount   基准资产数量
-	_amount  标价资产数量
 	
 ```
 

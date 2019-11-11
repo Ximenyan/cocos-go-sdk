@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"log"
 	"math/big"
+
+	"github.com/tidwall/gjson"
 )
 
 const CALL = `call`
@@ -295,6 +297,49 @@ func GetVotingInfo() *Votings {
 		VotingInfos := []*Votings{}
 		if err = resp.GetInterface(&VotingInfos); err == nil {
 			return VotingInfos[0]
+		}
+	}
+	return nil
+}
+
+func GetObject(id string) *gjson.Result {
+
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `get_objects`,
+			[]interface{}{[]string{id}}})
+	if resp, err := Client.Send(req); err == nil {
+		ress := []interface{}{}
+		if err := resp.GetInterface(&ress); err == nil {
+			if byte_s, err := json.Marshal(ress[0]); err == nil {
+				js := gjson.ParseBytes(byte_s)
+				return &js
+			}
+		}
+	}
+	return nil
+}
+
+func GetCurrentFees() (m map[int64]gjson.Result) {
+	defer func() {
+		if recover() != nil {
+			m = nil
+		}
+	}()
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `get_objects`,
+			[]interface{}{[]string{"2.0.0"}}})
+	if resp, err := Client.Send(req); err == nil {
+		VotingInfos := []*Votings{}
+		if err = resp.GetInterface(&VotingInfos); err == nil {
+			if byte_s, err := json.Marshal(VotingInfos[0].Parameters.CurrentFees.Parameters); err == nil {
+				log.Println(string(byte_s))
+				c_fees := gjson.ParseBytes(byte_s)
+				m := make(map[int64]gjson.Result)
+				for _, pair := range c_fees.Array() {
+					m[pair.Get("0").Int()] = pair.Get("1")
+				}
+				return m
+			}
 		}
 	}
 	return nil

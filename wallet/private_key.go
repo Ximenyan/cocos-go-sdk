@@ -122,9 +122,6 @@ func (prk PrivateKey) Sign(data []byte) string {
 		if err != nil {
 			log.Panic("secp256k1 sign error!!!")
 		}
-		log.Println("puk", prk.GetPublicKey())
-		log.Println("sign[0:64]", sign[0:64])
-		log.Println("data", data)
 		if is_valid(sign) && secp256k1.VerifySignature(prk.GetPublicKey(), data, sign[0:64]) {
 			return hex.EncodeToString(append([]byte{0x1f + sign[64]}, sign[0:64]...))
 		}
@@ -138,10 +135,6 @@ func VerifySignature(data, signature, puk string) bool {
 		data_digest := sha256digest(data_bytes)
 		if sign, err := hex.DecodeString(signature); err == nil {
 			if key := PukFromBase58String(puk); key != nil {
-				log.Println("key ", key)
-				log.Println("is_valid ", is_valid(sign[1:]))
-				log.Println("sign[1:65]", sign[1:65])
-				log.Println("data", data_bytes)
 				if is_valid(sign[1:]) && secp256k1.VerifySignature(key, data_digest, sign[1:65]) {
 					return true
 				}

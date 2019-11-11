@@ -208,8 +208,12 @@ func (w *Wallet) IsEmpty() bool {
 }
 
 //Transfer
-func (w *Wallet) Transfer(to, symbol, memo string, value float64) error {
-	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo)
+func (w *Wallet) Transfer(to, symbol string, value float64, memo ...string) error {
+	var memo_str string
+	if len(memo) > 0 {
+		memo_str = memo[0]
+	}
+	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo_str)
 	return w.SignAndSendTX(OP_TRANSFER, t)
 }
 
@@ -237,18 +241,22 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 			wif, _ := DecryptKey(w.Accounts[name].KeyPairs[i].EncryptWif, []byte(password))
 			w.Accounts[name].KeyPairs[i].Private_Key = PrkFromWifString(wif)
 			if w.Accounts[name].KeyPairs[i].PubKey != w.Accounts[name].KeyPairs[i].Private_Key.GetPublicKey().ToBase58String() {
-				log.Println(w.Accounts[name].KeyPairs[i].PubKey)
-				log.Println(w.Accounts[name].KeyPairs[i].Private_Key.GetPublicKey().ToBase58String())
+				//log.Println(w.Accounts[name].KeyPairs[i].PubKey)
+				//log.Println(w.Accounts[name].KeyPairs[i].Private_Key.GetPublicKey().ToBase58String())
 				return errors.New("password error!")
 			}
 		}
+		//acc.Info = rpc.GetAccountInfoByName(acc.Name)
 		w.Default = acc
 		return nil
 	}
 	return errors.New("no account name:" + name)
 }
-func (w *Wallet) SignAndSendTX(opID int, t Object) error {
-	if st, err := CreateSignTransaction(opID, w.Default.GetActiveKey(), t); err != nil {
+func (w *Wallet) SignAndSendTX(opID int, t Object, prk ...*PrivateKey) error {
+	if len(prk) <= 0 {
+		prk = []*PrivateKey{w.Default.GetActiveKey()}
+	}
+	if st, err := CreateSignTransaction(opID, t, prk...); err != nil {
 		return err
 	} else {
 		return rpc.BroadcastTransaction(st)
