@@ -21,10 +21,11 @@ const (
 
 // 连接参数
 type RpcClient struct {
-	serverAddr string
-	httpClient *http.Client
-	ws         *websocket.Conn
-	Handler    *sync.Map
+	serverAddr       string
+	httpClient       *http.Client
+	ws               *websocket.Conn
+	Handler          *sync.Map
+	SubscribeHandler *sync.Map
 }
 
 var Client *RpcClient
@@ -59,7 +60,7 @@ func newClient(host string, port int, useSSL bool) (c *RpcClient, err error) {
 	if err != nil {
 		log.Fatal("init sdk error:::", err)
 	}
-	c = &RpcClient{serverAddr: fmt.Sprintf("%s%s:%d", serverAddr, host, port), httpClient: httpClient, ws: ws, Handler: &sync.Map{}}
+	c = &RpcClient{serverAddr: fmt.Sprintf("%s%s:%d", serverAddr, host, port), httpClient: httpClient, ws: ws, Handler: &sync.Map{}, SubscribeHandler: &sync.Map{}}
 	go c.handler()
 	return
 }
@@ -86,14 +87,23 @@ func (c *RpcClient) handler() {
 	for {
 		var reply string
 		ret := &RpcResp{}
+		notice := &Notice{}
 		if err := websocket.Message.Receive(c.ws, &reply); err == nil {
-			if err = json.Unmarshal([]byte(reply), ret); err == nil {
-				//id, _ := strconv.Atoi(ret.Id)
+			if err = json.Unmarshal([]byte(reply), ret); err == nil && ret.Id != `` {
 				if f, ok := c.Handler.Load(ret.Id); ok {
-					f.(func(r *RpcResp) error)(ret)
+					//fmt.Println("-------------------")
+					go f.(func(r *RpcResp) error)(ret)
 					c.Handler.Delete(ret.Id)
 				}
+			} else if err = json.Unmarshal([]byte(reply), notice); err == nil {
+				//log.Println(notice.Params[0].(string))
+				if f, ok := c.SubscribeHandler.Load(notice.Params[0].(string)); ok {
+					go f.(func(r *Notice) error)(notice)
+				}
+			} else {
+				log.Println("xxxxxxxxxxx")
 			}
+
 		}
 	}
 }
@@ -103,6 +113,19 @@ func (c *RpcClient) SendWithHandler(reqData *RpcRequest, f func(r *RpcResp) erro
 	reqJson := reqData.ToString()
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
 		c.Handler.Store(strconv.Itoa(int(reqData.Id)), f)
+	}
+	return
+}
+
+func (c *RpcClient) Subscribe(subscribe string, f func(r *Notice) error) (ret *RpcResp, err error) {
+	id := time.Now().UnixNano()
+	reqData := CreateRpcRequest(CALL,
+		[]interface{}{DATABASE_API_ID, subscribe,
+			[]interface{}{id, true}})
+	reqData.Id = id
+	reqJson := reqData.ToString()
+	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
+		c.SubscribeHandler.Store(strconv.Itoa(int(reqData.Id)), f)
 	}
 	return
 }

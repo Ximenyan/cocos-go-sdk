@@ -130,6 +130,21 @@ func (prk PrivateKey) Sign(data []byte) string {
 
 }
 
+func VerifySignature(data, signature, puk string) bool {
+	if data_bytes, err := hex.DecodeString(data); err == nil {
+		data_digest := sha256digest(data_bytes)
+		if sign, err := hex.DecodeString(signature); err == nil {
+			if key := PukFromBase58String(puk); key != nil {
+				if is_valid(sign[1:]) && secp256k1.VerifySignature(key, data_digest, sign[1:65]) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+
+}
+
 /*验证签名是否是有效的签名*/
 func is_valid(sign []byte) bool {
 	if sign[0] < 0x80 &&

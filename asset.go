@@ -19,7 +19,6 @@ func FillNhAsset(order_id string) error {
 		Seller:           ObjectId(order_info.Seller),
 		PriceAssetSymbol: String(order_info.AssetQualifier),
 		Order:            ObjectId(order_id),
-		Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
@@ -33,13 +32,10 @@ func CancelNhAssetOrder(order_id string) error {
 	}
 	tx := &CancelOrder{
 		Order:            ObjectId(order_id),
-		Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		Extensions:       []interface{}{},
 	}
-	//rpc.GetRequireFeeData(53, tx)
-	//st := wallet.CreateSignTransaction(53, Wallet.Default.GetActiveKey(), tx)
-	return Wallet.SignAndSendTX(53, tx)
+	return Wallet.SignAndSendTX(OP_CANCEL_NH_ORDER, tx)
 }
 
 /*NH 资产卖出单*/
@@ -59,13 +55,10 @@ func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price
 		Price:            Amount{Amount: uint64(float64(price_amount) * price_precision), AssetID: ObjectId(price_asset)},
 		Seller:           ObjectId(Wallet.Default.Info.ID),
 		Otcaccount:       ObjectId(otcaccount_info.ID),
-		Fee:              EmptyFee(),
 		Expiration:       GetExpiration(),
 		Memo:             String(memo),
 	}
-	//rpc.GetRequireFeeData(52, tx)
-	//st := wallet.CreateSignTransaction(52, Wallet.Default.GetActiveKey(), tx)
-	return Wallet.SignAndSendTX(52, tx)
+	return Wallet.SignAndSendTX(OP_SELL_NH_ASSET, tx)
 }
 
 /*NH 资产删除*/
@@ -75,13 +68,10 @@ func DeleteNhAsset(asset_id string) error {
 	}
 	tx := &DelNhAsset{
 		NhAssetCreator: NhAssetCreator{
-			FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
-			Fee:              EmptyFee()},
+			FeePayingAccount: ObjectId(Wallet.Default.Info.ID)},
 		NhAsset: ObjectId(asset_id),
 	}
-	//rpc.GetRequireFeeData(50, tx)
-	//st := wallet.CreateSignTransaction(50, Wallet.Default.GetActiveKey(), tx)
-	return Wallet.SignAndSendTX(50, tx)
+	return Wallet.SignAndSendTX(OP_DEL_NH_ASSET, tx)
 }
 
 /*NH 资产转账*/
@@ -91,14 +81,11 @@ func TransferNhAsset(to_name, asset_id string) error {
 	}
 	to_info := rpc.GetAccountInfoByName(to_name)
 	tx := &TransferNh{
-		Fee:     EmptyFee(),
 		To:      ObjectId(to_info.ID),
 		From:    ObjectId(Wallet.Default.Info.ID),
 		NhAsset: ObjectId(asset_id),
 	}
-	//rpc.GetRequireFeeData(51, tx)
-	//st := wallet.CreateSignTransaction(51, Wallet.Default.GetActiveKey(), tx)
-	return Wallet.SignAndSendTX(51, tx)
+	return Wallet.SignAndSendTX(OP_TRANSFER_NH_ASSET, tx)
 }
 
 /*創建NH資產*/
@@ -108,16 +95,13 @@ func CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) e
 	}
 	owner_info := rpc.GetAccountInfoByName(owner_name)
 	nh_asset := &NhAsset{
-		Fee:              EmptyFee(),
 		AssetID:          String(asset_symbol),
 		BaseDescribe:     String(base_describe),
 		Owner:            ObjectId(owner_info.ID),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		WorldView:        String(world_view),
 	}
-	//rpc.GetRequireFeeData(49, nh_asset)
-	//st := wallet.CreateSignTransaction(49, Wallet.Default.GetActiveKey(), nh_asset)
-	return Wallet.SignAndSendTX(49, nh_asset)
+	return Wallet.SignAndSendTX(OP_CREATE_NH_ASSET, nh_asset)
 }
 
 /*批准 关联世界观的提议*/
@@ -126,7 +110,6 @@ func ApprovalsProposal(proposal_id string) error {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	approval := &Approvals{
-		Fee:                     EmptyFee(),
 		FeePayingAccount:        ObjectId(Wallet.Default.Info.ID),
 		Proposal:                ObjectId(proposal_id),
 		ActiveApprovalsToAdd:    []Object{ObjectId(Wallet.Default.Info.ID)},
@@ -148,18 +131,15 @@ func RelateWorldView(world_view string) error {
 	world_view_info := rpc.GetWorldViewInfo(world_view)
 	creator := rpc.GetWorldViewCreator(world_view_info.WorldViewCreator)
 	op_data := &ProposedOps{
-		Fee:            EmptyFee(),
 		RelatedAccount: ObjectId(Wallet.Default.Info.ID),
 		WorldView:      String(world_view),
 		ViewOwner:      ObjectId(creator.Creator),
 	}
-	rpc.GetRequireFeeData(48, op_data)
 	ops := OPS{
-		ID:  48,
+		ID:  OP_RELATE_WORLDVIEW,
 		Ops: *op_data,
 	}
 	op := &RelatedWorldView{
-		Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		ExpirationTime:   GetExpiration(),
 		ProposedOps:      []OPS{ops},
@@ -179,16 +159,12 @@ func CreateWorldView(name string) error {
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		WorldView:        String(name),
 	}
-	//rpc.GetRequireFeeData(47, world_view)
-	//st := wallet.CreateSignTransaction(47, Wallet.Default.GetActiveKey(), world_view)
-	return Wallet.SignAndSendTX(47, world_view)
+	return Wallet.SignAndSendTX(OP_CREATE_WORLDVIEW, world_view)
 }
 
 /*更新 token*/
-func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64, new_issuer ...string) error {
+func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...string) error {
 
-	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
-	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
 
 	if Wallet.Default.Info == nil {
@@ -196,14 +172,13 @@ func UpdateToken(symbol, asset, _asset string, max_supply, precision, amount, _a
 	}
 	precision = uint64(math.Pow10(int(precision)))
 	cm_op := CommonOptions{
-		MaxSupply:            max_supply * precision,
-		MarketFeePercent:     0,
-		MaxMarketFee:         0,
-		Flags:                0,
-		IssuerPermissions:    79,
-		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
-		Description:          String(`{"main":"` + symbol + `","short_name":"","market":""}`),
-		Extensions:           []interface{}{},
+		MaxSupply:         max_supply * precision,
+		MarketFeePercent:  0,
+		MaxMarketFee:      0,
+		Flags:             0,
+		IssuerPermissions: 79,
+		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
+		Extensions:  []interface{}{},
 	}
 	var newIssuer ObjectId
 	if len(new_issuer) >= 1 {
@@ -241,35 +216,30 @@ func ReserveToken(symbol string, amount float64) error {
 }
 
 /*创建 token*/
-func CreateToken(symbol, asset, _asset string, max_supply, precision, amount, _amount uint64) error {
+func CreateToken(symbol string, max_supply, precision uint64) error {
 
-	base := Amount{Amount: amount, AssetID: ObjectId(asset)}
-	quote := Amount{Amount: _amount, AssetID: ObjectId(_asset)}
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
-	precision = uint64(math.Pow10(int(precision)))
+	new_precision := uint64(math.Pow10(int(precision)))
+
 	cm_op := CommonOptions{
-		MaxSupply:            max_supply * precision,
-		MarketFeePercent:     0,
-		MaxMarketFee:         0,
-		Flags:                0,
-		IssuerPermissions:    79,
-		CoreExchangeRateData: CoreExchangeRate{Base: base, Quote: quote},
-		Description:          String(`{"main":"` + symbol + `","short_name":"","market":""}`),
-		Extensions:           []interface{}{},
+		MaxSupply:         max_supply * new_precision,
+		MarketFeePercent:  0,
+		MaxMarketFee:      0,
+		Flags:             0,
+		IssuerPermissions: 79,
+		Description: String(`{"main":"` + symbol + `","short_name":"","market":""}`),
+		Extensions:  []interface{}{},
 	}
 	AssetData := &CreateAssetData{
-		Fee:               EmptyFee(),
 		Extensions:        []interface{}{},
 		Precision:         precision,
 		Issuer:            ObjectId(Wallet.Default.Info.ID),
 		Symbol:            String(symbol),
 		CommonOptionsData: cm_op,
 	}
-	//rpc.GetRequireFeeData(8, AssetData)
-	//st := wallet.CreateSignTransaction(8, Wallet.Default.GetActiveKey(), AssetData)
-	return Wallet.SignAndSendTX(8, AssetData)
+	return Wallet.SignAndSendTX(OP_CREATE_ASSET_TOKEN, AssetData)
 }
 
 /*发行人 可以领取累计的手续费*/
@@ -294,12 +264,24 @@ func TokenFundFeePool(symbol string, amount float64) error {
 	}
 	feePool := &TokenFeePoolData{
 		AssetID:     ObjectId(asset_info.ID),
-		Fee:         EmptyFee(),
 		FromAccount: ObjectId(Wallet.Default.Info.ID),
 		Amount:      uint64(float64(amount) * precision),
 		Extensions:  []interface{}{},
 	}
 	return Wallet.SignAndSendTX(OP_FUND_FEEPOOL, feePool)
+}
+
+func Pledgegas(mortgager, beneficiary string, collateral float64) error {
+	m_info := rpc.GetAccountInfoByName(mortgager)
+	b_info := rpc.GetAccountInfoByName(beneficiary)
+	tk_info := rpc.GetTokenInfo(COCOS_ID)
+	precision := math.Pow10(tk_info.Precision)
+	p := &PledgeGas{
+		Mortgager:   ObjectId(m_info.ID),
+		Beneficiary: ObjectId(b_info.ID),
+		Collateral:  uint64(collateral * precision),
+	}
+	return Wallet.SignAndSendTX(OP_PLEDGE_GAS, p)
 }
 
 func CreateVestingBalance(symbol string, amount float64) error {
@@ -314,7 +296,6 @@ func CreateVestingBalance(symbol string, amount float64) error {
 		VestingSeconds: 0,
 	}
 	v := &VestingBalanceCreate{
-		Fee:     EmptyFee(),
 		Owner:   ObjectId(Wallet.Default.Info.ID),
 		Amount:  Amount{Amount: uint64(amount * precision), AssetID: asset_info.ID},
 		Policy:  p,
@@ -336,7 +317,6 @@ func WithdrawVestingBalance(balance_id string) error {
 		}
 	}
 	v := &VestingBalanceWithdraw{
-		Fee:            EmptyFee(),
 		VestingBalance: ObjectId(balance_id),
 		Owner:          ObjectId(Wallet.Default.Info.ID),
 		Amount:         Amount{AssetID: ObjectId(balance_info.Balance.AssetID), Amount: balance_info.GetBalanceAmount()},
@@ -353,13 +333,56 @@ func IssueToken(symbol, issue_to_account string, amount float64) error {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
 	precision := math.Pow10(asset_info.Precision)
 	issue := &IssueAsset{
-		Fee:            EmptyFee(),
 		Extensions:     []interface{}{},
 		Issuer:         ObjectId(Wallet.Default.Info.ID),
 		IssueToAccount: ObjectId(to_info.ID),
 		AssetToIssue:   Amount{Amount: uint64(amount * precision), AssetID: ObjectId(asset_info.ID)},
 	}
 	return Wallet.SignAndSendTX(OP_ISSUE_TOKEN, issue)
+}
+
+//见证人投票
+func VoteWitness(id string, value float64) error {
+	tk_info := rpc.GetTokenInfo(COCOS_ID)
+	precision := math.Pow10(tk_info.Precision)
+	info := rpc.GetObject(id)
+
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	v := &VoteData{
+		LockWithVote: OPArray{Int32(0), Amount{Amount: uint64(value * precision), AssetID: COCOS_ID}},
+		Account:      ObjectId(Wallet.Default.Info.ID),
+		NewOptions: NewOptions{
+			MemoKey:    Wallet.Default.GetMemoKey().GetPublicKey().ToBase58String(),
+			Votes:      Array{VoteId(info.Get("vote_id").String())},
+			Extensions: Extensions{}},
+		Extensions: Extensions{},
+	}
+	return Wallet.SignAndSendTX(OP_VOTE, v)
+}
+
+func VoteWitnessV1(id string, value float64) error {
+	//tk_info := rpc.GetTokenInfo(COCOS_ID)
+	//precision := math.Pow10(tk_info.Precision)
+	info := rpc.GetObject(id)
+
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	v := &V1VoteData{
+		//LockWithVote: OPArray{Int32(0), Amount{Amount: uint64(value * precision), AssetID: COCOS_ID}},
+		Account: ObjectId(Wallet.Default.Info.ID),
+		NewOptions: V1NewOptions{
+			MemoKey:       Wallet.Default.GetMemoKey().GetPublicKey().ToBase58String(),
+			Votes:         Array{VoteId(info.Get("vote_id").String())},
+			VotingAccount: ObjectId(id),
+			NumWitness:    Int16(1),
+			NumCommittee:  Int16(0),
+			Extensions:    Extensions{}},
+		Extensions: Extensions{},
+	}
+	return Wallet.SignAndSendTX(OP_VOTE, v)
 }
 
 /*查询订单信息*/
@@ -419,7 +442,7 @@ func GetVestingBalances(acct_name string) []rpc.VestingBalances {
 }
 
 /*查询账户操作记录*/
-func GetAccountHistorys(acct_name string) []interface{} {
+func GetAccountHistorys(acct_name string) rpc.History {
 	return rpc.GetAccountHistory(acct_name)
 }
 
