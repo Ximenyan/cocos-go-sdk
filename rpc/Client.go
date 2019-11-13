@@ -136,6 +136,7 @@ func (c *RpcClient) Subscribe(subscribe string, f func(r *Notice) error) (ret *R
 func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 	ret = &RpcResp{}
 	reqJson := reqData.ToString()
+	//log.Println(reqJson)
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
 		ch := make(chan *RpcResp)
 		c.Handler.Store(strconv.Itoa(int(reqData.Id)), func(r *RpcResp) error {
