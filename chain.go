@@ -32,7 +32,7 @@ func GetTransactionInBlock(txId string) *rpc.TXInBlockInfo {
 }
 
 /*查询投票信息*/
-func GetVotingInfo() []rpc.VotingInfo {
+func GetVotingInfo() [][]rpc.VotingInfo {
 	v := rpc.GetVotingInfo()
 	return v.GetInfo()
 }

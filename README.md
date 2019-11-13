@@ -3,7 +3,7 @@
 ## 安装
 
 ```
-git clone https://github.com/Ximenyan/cocos-go-sdk.git
+git clone https://github.com/Cocos-BCX/Go-SDK.git
 ```
 或者 
 ```

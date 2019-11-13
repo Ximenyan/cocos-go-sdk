@@ -89,6 +89,8 @@ func (c *RpcClient) handler() {
 		ret := &RpcResp{}
 		notice := &Notice{}
 		if err := websocket.Message.Receive(c.ws, &reply); err == nil {
+			//fmt.Println("-------------------")
+			//log.Println(reply)
 			if err = json.Unmarshal([]byte(reply), ret); err == nil && ret.Id != `` {
 				if f, ok := c.Handler.Load(ret.Id); ok {
 					//fmt.Println("-------------------")

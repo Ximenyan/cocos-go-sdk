@@ -156,7 +156,7 @@ func CreateWorldView(name string) error {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	world_view := &WorldView{
-		Fee:              EmptyFee(),
+		//Fee:              EmptyFee(),
 		FeePayingAccount: ObjectId(Wallet.Default.Info.ID),
 		WorldView:        String(name),
 	}
@@ -189,7 +189,6 @@ func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...stri
 		newIssuer = EMPTY_ID
 	}
 	AssetData := &UpdateAssetData{
-		Fee:            EmptyFee(),
 		Extensions:     []interface{}{},
 		NewIssuer:      Optional(newIssuer),
 		Issuer:         ObjectId(Wallet.Default.Info.ID),
@@ -211,7 +210,6 @@ func ReserveToken(symbol string, amount float64) error {
 		Extensions:      []interface{}{},
 		Payer:           ObjectId(Wallet.Default.Info.ID),
 		AmountToReserve: Amount{Amount: uint64(float64(amount) * precision), AssetID: ObjectId(asset_info.ID)},
-		Fee:             EmptyFee(),
 	}
 	return Wallet.SignAndSendTX(OP_RESERVE_TOKEN, AssetData)
 }
@@ -251,7 +249,6 @@ func ClaimFees(symbol string, value float64) error {
 		Extensions:    []interface{}{},
 		Issuer:        ObjectId(Wallet.Default.Info.ID),
 		AmountToClaim: Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(asset_info.ID)},
-		Fee:           EmptyFee(),
 	}
 	return Wallet.SignAndSendTX(OP_CLAIM_FEES, ctf)
 }
@@ -272,19 +269,23 @@ func TokenFundFeePool(symbol string, amount float64) error {
 	return Wallet.SignAndSendTX(OP_FUND_FEEPOOL, feePool)
 }
 
-func Pledgegas(mortgager, beneficiary string, collateral float64) error {
-	m_info := rpc.GetAccountInfoByName(mortgager)
+func Pledgegas(beneficiary string, collateral float64) error {
+	//m_info := rpc.GetAccountInfoByName(mortgager)
+	if Wallet.Default.Info == nil {
+		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
 	b_info := rpc.GetAccountInfoByName(beneficiary)
 	tk_info := rpc.GetTokenInfo(COCOS_ID)
 	precision := math.Pow10(tk_info.Precision)
 	p := &PledgeGas{
-		Mortgager:   ObjectId(m_info.ID),
+		Mortgager:   ObjectId(Wallet.Default.Info.ID),
 		Beneficiary: ObjectId(b_info.ID),
 		Collateral:  uint64(collateral * precision),
 	}
 	return Wallet.SignAndSendTX(OP_PLEDGE_GAS, p)
 }
 
+/*
 func CreateVestingBalance(symbol string, amount float64) error {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
@@ -303,7 +304,7 @@ func CreateVestingBalance(symbol string, amount float64) error {
 		Creator: ObjectId(Wallet.Default.Info.ID),
 	}
 	return Wallet.SignAndSendTX(OP_VESTING_CREATE, v)
-}
+}*/
 
 func WithdrawVestingBalance(balance_id string) error {
 	if Wallet.Default.Info == nil {
@@ -366,6 +367,9 @@ func Vote(id string, value float64) error {
 			Extensions: Extensions{}},
 		Extensions: Extensions{},
 	}
+	if value == 0 {
+		v.NewOptions.Votes = Array{}
+	}
 	return Wallet.SignAndSendTX(OP_VOTE, v, Wallet.Default.GetActiveKey(), Wallet.Default.GetOwnerKey())
 }
 
@@ -421,8 +425,11 @@ func GetTokenInfoById(id string) *rpc.TokenInfo {
 }
 
 /*查询账户待提取的奖励*/
-func GetVestingBalances(acct_name string) []rpc.VestingBalances {
-	return rpc.GetVestingBalancesByName(acct_name)
+func GetVestingBalances(acct_name ...string) []rpc.VestingBalances {
+	if len(acct_name) < 1 {
+		return rpc.GetVestingBalancesByName(Wallet.Default.Name)
+	}
+	return rpc.GetVestingBalancesByName(acct_name[0])
 }
 
 /*查询账户操作记录*/
