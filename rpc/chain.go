@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"log"
 	"math/big"
+	"time"
 
 	"github.com/tidwall/gjson"
 )
@@ -151,16 +152,29 @@ type VestingBalances struct {
 }
 
 func (v VestingBalances) GetBalanceAmount() uint64 {
+	var amount uint64
 	if str, b := v.Balance.Amount.(string); b {
 		byte_s, _ := hex.DecodeString(str)
 		byte_s = common.ReverseBytes(byte_s)
-		return new(big.Int).SetBytes(byte_s).Uint64()
+		amount = new(big.Int).SetBytes(byte_s).Uint64()
 	} else {
-		return uint64(v.Balance.Amount.(float64))
+		amount = uint64(v.Balance.Amount.(float64))
+	}
+	if byte_s, err := json.Marshal(v.Policy); err == nil {
+		policy_js := gjson.ParseBytes(byte_s)
+		update_time := policy_js.Get("1.coin_seconds_earned_last_update").String()
+		vesting_seconds := policy_js.Get("1.vesting_seconds").Int()
+		t, _ := time.Parse(TIME_FORMAT, update_time)
+		if time.Now().Unix()-t.In(UTCZone).Unix() < vesting_seconds {
+			amount = (amount * uint64(time.Now().Unix()-t.In(UTCZone).Unix())) / (24 * 60 * 60)
+
+		}
+		return amount
 	}
 	log.Panicln("VestingBalances  GetBalanceAmount Error!!!")
 	return 0
 }
+
 func GetVestingBalancesByName(acct_name string) []VestingBalances {
 	acct_info := GetAccountInfoByName(acct_name)
 	req := CreateRpcRequest(CALL,
@@ -276,17 +290,28 @@ type VotingInfo struct {
 	Supporters            []interface{} `json:"supporters"`
 }
 
-func (o *Votings) GetInfo() []VotingInfo {
-	params := []interface{}{o.ActiveWitnesses}
+func (o *Votings) GetInfo() [][]VotingInfo {
+	witnesses_params := []interface{}{o.ActiveWitnesses}
+	committee_params := []interface{}{o.ActiveCommitteeMembers}
+
+	votingInfos := [][]VotingInfo{}
 	req := CreateRpcRequest(CALL,
-		[]interface{}{0, `get_objects`, params})
+		[]interface{}{0, `get_objects`, witnesses_params})
 	if resp, err := Client.Send(req); err == nil {
 		VotingInfos := []VotingInfo{}
 		if err = resp.GetInterface(&VotingInfos); err == nil {
-			return VotingInfos
+			votingInfos = append(votingInfos, VotingInfos)
 		}
 	}
-	return nil
+	req = CreateRpcRequest(CALL,
+		[]interface{}{0, `get_objects`, committee_params})
+	if resp, err := Client.Send(req); err == nil {
+		VotingInfos := []VotingInfo{}
+		if err = resp.GetInterface(&VotingInfos); err == nil {
+			votingInfos = append(votingInfos, VotingInfos)
+		}
+	}
+	return votingInfos
 }
 
 func GetVotingInfo() *Votings {

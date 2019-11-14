@@ -13,7 +13,6 @@ func ReviseContract(c_name, data string) error {
 	}
 	contract_info := rpc.GetContract(c_name)
 	contract := &UpdateContractData{
-		Fee:        EmptyFee(),
 		ContractID: ObjectId(contract_info.ID),
 		Extensions: []interface{}{},
 		Data:       String(data),
@@ -67,7 +66,6 @@ func InvokeContract(contract_name, func_name string, args ...interface{}) error 
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	call_data := &CallData{
-		Fee:          EmptyFee(),
 		ValueList:    value_list,
 		Extensions:   []interface{}{},
 		Caller:       ObjectId(Wallet.Default.Info.ID),

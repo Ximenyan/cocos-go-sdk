@@ -241,12 +241,9 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 			wif, _ := DecryptKey(w.Accounts[name].KeyPairs[i].EncryptWif, []byte(password))
 			w.Accounts[name].KeyPairs[i].Private_Key = PrkFromWifString(wif)
 			if w.Accounts[name].KeyPairs[i].PubKey != w.Accounts[name].KeyPairs[i].Private_Key.GetPublicKey().ToBase58String() {
-				//log.Println(w.Accounts[name].KeyPairs[i].PubKey)
-				//log.Println(w.Accounts[name].KeyPairs[i].Private_Key.GetPublicKey().ToBase58String())
 				return errors.New("password error!")
 			}
 		}
-		//acc.Info = rpc.GetAccountInfoByName(acc.Name)
 		w.Default = acc
 		return nil
 	}

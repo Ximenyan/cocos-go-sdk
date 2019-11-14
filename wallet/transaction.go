@@ -8,7 +8,6 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -152,9 +151,7 @@ func CreateSignTransaction(opID int, t Object, prk ...*PrivateKey) (st *Signed_T
 	if cid, err = hex.DecodeString(chain.CocosBCXChain.Properties.ChainID); err != nil {
 		return nil, err
 	}
-	fmt.Println(byte_s)
 	byte_s = append(cid, byte_s...)
-	fmt.Println(hex.EncodeToString(byte_s))
 	msg := sha256digest(byte_s)
 	for _, k := range prk {
 		st.Signatures = append(st.Signatures, k.Sign(msg))
