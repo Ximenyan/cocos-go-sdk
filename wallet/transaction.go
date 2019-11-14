@@ -1,7 +1,7 @@
 package wallet
 
 import (
-	"cocos-go-sdk/chain"
+	"CocosSDK/chain"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
@@ -14,10 +14,10 @@ import (
 	"strconv"
 	"time"
 
-	"cocos-go-sdk/common"
-	"cocos-go-sdk/crypto/secp256k1"
-	"cocos-go-sdk/rpc"
-	. "cocos-go-sdk/type"
+	"CocosSDK/common"
+	"CocosSDK/crypto/secp256k1"
+	"CocosSDK/rpc"
+	. "CocosSDK/type"
 )
 
 func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value float64, memo string) *Transaction {
@@ -25,12 +25,14 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 	to_puk := to_info.GetActivePuKey()
 	from_info := rpc.GetAccountInfoByName(from_name)
 	from_puk := from_info.GetActivePuKey()
-	m_data := CreateMemo(prk, from_puk, to_puk, memo)
+	m_data := EncodeMemo(prk, from_puk, to_puk, memo)
+	if memo == "" {
+		m_data = nil
+	}
 	tk_info := rpc.GetTokenInfoBySymbol(tk_symbol)
 
 	precision := math.Pow10(tk_info.Precision)
 	t := &Transaction{
-		Fee:            EmptyFee(),
 		AmountData:     Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(tk_info.ID)},
 		ExtensionsData: []interface{}{},
 		From:           ObjectId(from_info.ID),
@@ -40,19 +42,38 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 	return t
 }
 
-type Operation []interface{}
-
-func (o Operation) GetBytes() []byte {
-	id := int64(o[0].(int))
-	id_data := common.VarInt(id, 8)
-	opData := o[1].(OpData)
-	trans_data := opData.GetBytes()
-	byte_s := append(id_data, trans_data...)
-	return byte_s
+func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg string, err error) {
+	msg_byte_s, err := hex.DecodeString(msg)
+	puk := PukFromBase58String(from)
+	x, y := puk.GetPoint()
+	cure := secp256k1.S256()
+	x, y = cure.ScalarMult(x, y, prk.PrivKey)
+	sha := sha512.New()
+	byte_s := x.Bytes()
+	sha.Write(byte_s)
+	resss := sha.Sum(nil)
+	noce_s := strconv.FormatUint(nonce, 10)
+	seed := noce_s + hex.EncodeToString(resss)
+	sha.Reset()
+	sha.Write([]byte(seed))
+	seed_digest := sha.Sum(nil)
+	s256 := sha256.New()
+	s256.Write([]byte(msg))
+	checksum := s256.Sum(nil)
+	byte_s_msg := append(checksum[0:4], []byte(msg)...)
+	num := 16 - len(byte_s_msg)%16
+	for i := 0; i < num && num != 16; i++ {
+		byte_s_msg = append(byte_s_msg, byte(num))
+	}
+	block, _ := aes.NewCipher(seed_digest[0:32])
+	bm := cipher.NewCBCDecrypter(block, seed_digest[32:48])
+	bm.CryptBlocks(msg_byte_s, msg_byte_s)
+	decode_msg = string(msg_byte_s[4:])
+	return
 }
 
-func CreateMemo(prk *PrivateKey, from, to, msg string) Memo {
-	m := Memo{
+func EncodeMemo(prk *PrivateKey, from, to, msg string) *Memo {
+	m := &Memo{
 		From:    from,
 		To:      to,
 		Message: msg,
@@ -99,7 +120,6 @@ func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
 	//fmt.Println("block_num_data", block_num_data)
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
-	//fmt.Println("block_prefix_data", block_prefix_data)
 	t, _ := time.Parse(TIME_FORMAT, o.Expiration)
 	expiration_data := common.VarUint(uint64(t.Unix()), 32)
 	//fmt.Println("expiration_data", expiration_data)
@@ -116,7 +136,7 @@ func (o Signed_Transaction) GetBytes() []byte {
 	return byte_s
 }
 
-func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) (st *Signed_Transaction, err error) {
+func CreateSignTransaction(opID int, t Object, prk ...*PrivateKey) (st *Signed_Transaction, err error) {
 	if prk == nil {
 		return nil, errors.New("private key is nil!!")
 	}
@@ -125,7 +145,7 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) (st *Signed_Tran
 	st = &Signed_Transaction{
 		RefBlockNum:    dgp.Get_ref_block_num(),
 		RefBlockPrefix: dgp.Get_ref_block_prefix(),
-		Expiration:     time.Unix(time.Now().Unix(), 0).Format(TIME_FORMAT),
+		Expiration:     time.Now().Format(TIME_FORMAT),
 		Operations:     []Operation{op},
 		ExtensionsData: []interface{}{},
 		Signatures:     []string{},
@@ -138,7 +158,9 @@ func CreateSignTransaction(opID int, prk *PrivateKey, t OpData) (st *Signed_Tran
 	byte_s = append(cid, byte_s...)
 	fmt.Println(hex.EncodeToString(byte_s))
 	msg := sha256digest(byte_s)
-	st.Signatures = append(st.Signatures, prk.Sign(msg))
+	for _, k := range prk {
+		st.Signatures = append(st.Signatures, k.Sign(msg))
+	}
 	return st, nil
 }
 

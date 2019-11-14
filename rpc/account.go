@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	. "cocos-go-sdk/type"
+	. "CocosSDK/type"
 	"encoding/json"
 	"log"
 )

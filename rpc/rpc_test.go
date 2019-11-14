@@ -32,7 +32,7 @@ func TestGetTokenInfo(t *testing.T) {
 	res := GetTokenInfoBySymbol("WTH")
 	byte_s, _ := json.Marshal(res)
 	t.Log(string(byte_s))
-}*/
+}
 
 func TestGetOrderInfo(t *testing.T) {
 	res := GetNhAssetOrderInfo("4.3.937")
@@ -40,7 +40,7 @@ func TestGetOrderInfo(t *testing.T) {
 	t.Log(string(byte_s))
 	t.Log(res.Price.Amount)
 }
-
+*/
 /*
 func TestListNhAsset(t *testing.T) {
 	res := GetNhAssetList("ximenyan1111", 1, 10, 3, []string{"block_chain"})

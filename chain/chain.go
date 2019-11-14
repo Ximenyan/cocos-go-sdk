@@ -1,7 +1,7 @@
-package chain // import "cocos-go-sdk/chain"
+package chain // import "CocosSDK/chain"
 
 import (
-	"cocos-go-sdk/rpc"
+	"CocosSDK/rpc"
 	"log"
 )
 

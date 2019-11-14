@@ -1,7 +1,9 @@
 package CocosSDK
 
 import (
-	"cocos-go-sdk/rpc"
+	"CocosSDK/rpc"
+
+	"github.com/tidwall/gjson"
 )
 
 /*查询Block*/
@@ -22,4 +24,20 @@ func GetBlockHeader(block_hight int) *rpc.BlockHeader {
 /*查询交易*/
 func GetTransactionById(txId string) *rpc.TransactinInfo {
 	return rpc.GetTransactionById(txId)
+}
+
+/*查询交易所在的block*/
+func GetTransactionInBlock(txId string) *rpc.TXInBlockInfo {
+	return rpc.GetTransactionInBlock(txId)
+}
+
+/*查询投票信息*/
+func GetVotingInfo() [][]rpc.VotingInfo {
+	v := rpc.GetVotingInfo()
+	return v.GetInfo()
+}
+
+/*查询手续费集合*/
+func GetCurrentFees() map[int64]gjson.Result {
+	return rpc.GetCurrentFees()
 }

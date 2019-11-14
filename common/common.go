@@ -81,8 +81,9 @@ func VarInt(si int64, base uint) []byte {
 }
 
 func UintVar(byte_s []byte) int64 {
+	byte_s = ReverseBytes(byte_s)
 	i := len(byte_s)
-	for byte_s[i-1] == 0 {
+	for i-1 >= 0 && byte_s[i-1] == 0 {
 		byte_s = byte_s[:i]
 		i -= 1
 	}

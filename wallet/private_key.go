@@ -1,7 +1,7 @@
 package wallet
 
 import (
-	"cocos-go-sdk/crypto/secp256k1"
+	"CocosSDK/crypto/secp256k1"
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
@@ -9,8 +9,8 @@ import (
 	"math/big"
 	"time"
 
-	"cocos-go-sdk/common/math"
-	"cocos-go-sdk/crypto/base58-go"
+	"CocosSDK/common/math"
+	"CocosSDK/crypto/base58-go"
 )
 
 type PrivateKey struct {
@@ -127,6 +127,21 @@ func (prk PrivateKey) Sign(data []byte) string {
 		}
 		nData += 1
 	}
+
+}
+
+func VerifySignature(data, signature, puk string) bool {
+	if data_bytes, err := hex.DecodeString(data); err == nil {
+		data_digest := sha256digest(data_bytes)
+		if sign, err := hex.DecodeString(signature); err == nil {
+			if key := PukFromBase58String(puk); key != nil {
+				if is_valid(sign[1:]) && secp256k1.VerifySignature(key, data_digest, sign[1:65]) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 
 }
 
