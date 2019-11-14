@@ -12,14 +12,14 @@ export GOPROXY=https://goproxy.cn
 go.mod 增加
 
 ```
-replace Go-SDK => github.com/Cocos-BCX/Go-SDK
+replace CocosSDK => github.com/Cocos-BCX/Go-SDK
 ```
 
 ## 使用
 
 ```
 import (
-	sdk "Go-SDK"
+	sdk "CocosSDK"
 	"fmt"
 )
 

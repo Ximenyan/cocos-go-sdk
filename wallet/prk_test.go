@@ -1,8 +1,8 @@
 package wallet
 
 import (
-	"Go-SDK/crypto/secp256k1"
-	"Go-SDK/rpc"
+	"CocosSDK/crypto/secp256k1"
+	"CocosSDK/rpc"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"

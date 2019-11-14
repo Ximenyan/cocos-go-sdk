@@ -2,8 +2,8 @@ package CocosSDK
 
 import (
 	//"encoding/json"
-	//"cocos-go-sdk/wallet"
-	//. "cocos-go-sdk/type"
+	//"cocos-CocosSDK/wallet"
+	//. "cocos-CocosSDK/type"
 	"testing"
 )
 
@@ -32,9 +32,7 @@ func TestTransfer(t *testing.T) {
 	//ReserveToken("C4C4S", 1)
 	//Wallet.RegisterNhAssetCreator("gggg2")
 	//UpdateToken("C5C5S", 10000000, 3)
-	//err := Pledgegas("gggg1", "gggg1", 0)
 	//CreateWorldView("BCX")
-	//RelateWorldView("BCX")
 	//CreateNhAsset("COCOS", "BCX", "gggg1", `{"name":"乾坤大挪移"}`)
 	//SellNhAsset("ximenyan1111", "4.2.1", "便宜货...", COCOS_ID, COCOS_ID, 5, 100)
 	//CancelNhAssetOrder("4.3.0")
@@ -42,17 +40,22 @@ func TestTransfer(t *testing.T) {
 	//DeleteNhAsset("4.2.0")
 	//ReviseContractByFile("contract.test12343", "./test.lua")
 	//TransferNhAsset("gggg2", "4.2.2")
+
 	//质押gas
-	Pledgegas("gggg2", 100)
+	err := Pledgegas("gggg2", 100)
+	t.Log(err)
 	//赎回
-	Pledgegas("gggg2", 0)
+	err = Pledgegas("gggg2", 0)
+	t.Log(err)
 	//投票
-	err := Vote("1.5.6", 10000)
+	err = Vote("1.5.6", 100)
+	t.Log(err)
 	//投票赎回
 	err = Vote("1.5.6", 0)
+	t.Log(err)
 	//查询可领取的冻结资产
 	GetVestingBalances()
 	//领取冻结资产
-	err = WithdrawVestingBalance("1.13.16")
+	err = WithdrawVestingBalance("1.13.30")
 	t.Log(err)
 }

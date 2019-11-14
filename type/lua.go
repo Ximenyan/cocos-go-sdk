@@ -1,7 +1,7 @@
 package types
 
 import (
-	"Go-SDK/common"
+	"CocosSDK/common"
     "encoding/json"
 	"errors"
 	"fmt"

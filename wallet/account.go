@@ -1,7 +1,7 @@
 package wallet
 
 import (
-	"Go-SDK/rpc"
+	"CocosSDK/rpc"
 )
 
 type KeyPair struct {

@@ -1,8 +1,8 @@
 package rpc
 
 import (
-	"Go-SDK/common"
-	. "Go-SDK/type"
+	"CocosSDK/common"
+	. "CocosSDK/type"
 	"encoding/hex"
 	"encoding/json"
 	"log"
@@ -166,8 +166,6 @@ func (v VestingBalances) GetBalanceAmount() uint64 {
 		vesting_seconds := policy_js.Get("1.vesting_seconds").Int()
 		t, _ := time.Parse(TIME_FORMAT, update_time)
 		if time.Now().Unix()-t.In(UTCZone).Unix() < vesting_seconds {
-			//log.Println(t.In(UTCZone).Unix())
-			//log.Println(time.Now().Unix())
 			amount = (amount * uint64(time.Now().Unix()-t.In(UTCZone).Unix())) / (24 * 60 * 60)
 
 		}

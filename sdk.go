@@ -1,9 +1,9 @@
-package CocosSDK // import "Go-SDK"
+package CocosSDK // import "CocosSDK"
 
 import (
-	"Go-SDK/chain"
-	"Go-SDK/rpc"
-	"Go-SDK/wallet"
+	"CocosSDK/chain"
+	"CocosSDK/rpc"
+	"CocosSDK/wallet"
 	"log"
 	"sync"
 )

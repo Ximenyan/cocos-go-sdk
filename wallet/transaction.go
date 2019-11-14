@@ -1,7 +1,7 @@
 package wallet
 
 import (
-	"Go-SDK/chain"
+	"CocosSDK/chain"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
@@ -13,10 +13,10 @@ import (
 	"strconv"
 	"time"
 
-	"Go-SDK/common"
-	"Go-SDK/crypto/secp256k1"
-	"Go-SDK/rpc"
-	. "Go-SDK/type"
+	"CocosSDK/common"
+	"CocosSDK/crypto/secp256k1"
+	"CocosSDK/rpc"
+	. "CocosSDK/type"
 )
 
 func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value float64, memo string) *Transaction {

@@ -1,7 +1,7 @@
 package chain
 
 import (
-	"Go-SDK/common"
+	"CocosSDK/common"
 	"encoding/hex"
 	"math/big"
 	"testing"

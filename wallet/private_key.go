@@ -1,7 +1,7 @@
 package wallet
 
 import (
-	"Go-SDK/crypto/secp256k1"
+	"CocosSDK/crypto/secp256k1"
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
@@ -9,8 +9,8 @@ import (
 	"math/big"
 	"time"
 
-	"Go-SDK/common/math"
-	"Go-SDK/crypto/base58-go"
+	"CocosSDK/common/math"
+	"CocosSDK/crypto/base58-go"
 )
 
 type PrivateKey struct {

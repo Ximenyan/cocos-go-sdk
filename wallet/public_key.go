@@ -4,8 +4,8 @@ import (
 	"crypto/sha256"
 	"math/big"
 
-	"Go-SDK/crypto/base58-go"
-	"Go-SDK/crypto/secp256k1"
+	"CocosSDK/crypto/base58-go"
+	"CocosSDK/crypto/secp256k1"
 
 	"golang.org/x/crypto/ripemd160"
 )

@@ -1,9 +1,9 @@
 package wallet
 
 import (
-	"Go-SDK/common"
-	"Go-SDK/rpc"
-	. "Go-SDK/type"
+	"CocosSDK/common"
+	"CocosSDK/rpc"
+	. "CocosSDK/type"
 	"encoding/json"
 	"errors"
 	"io/ioutil"

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Go-SDK/rpc"
-	"Go-SDK/wallet"
+	"CocosSDK/rpc"
+	"CocosSDK/wallet"
 	"testing"
 )
 

@@ -1,8 +1,8 @@
-package chain // import "Go-SDK/chain"
+package chain // import "CocosSDK/chain"
 
 import (
 	"log"
-	"Go-SDK/rpc"
+	"CocosSDK/rpc"
 )
 
 type ChainProperties struct {

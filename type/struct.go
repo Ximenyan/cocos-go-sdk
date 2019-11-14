@@ -1,7 +1,7 @@
 package types
 
 import (
-	"Go-SDK/common"
+	"CocosSDK/common"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"Go-SDK/crypto/base58-go"
+	"CocosSDK/crypto/base58-go"
 )
 
 func PukBytesFromBase58String(base58Str string) []byte {

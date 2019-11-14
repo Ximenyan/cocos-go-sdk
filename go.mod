@@ -1,4 +1,4 @@
-module Go-SDK
+module CocosSDK
 
 replace golang.org/x/net => github.com/golang/net v0.0.0-20191027233614-53de4c7853b5
 
