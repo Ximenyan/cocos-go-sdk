@@ -163,11 +163,23 @@ func CreateWorldView(name string) (string, error) {
 	return Wallet.SignAndSendTX(OP_CREATE_WORLDVIEW, world_view)
 }
 
+const (
+	Charge_market_fee    = 0x01
+	White_list           = 0x02
+	Override_authority   = 0x04
+	Transfer_restricted  = 0x08
+	Gisable_force_settle = 0x10
+	Global_settle        = 0x20
+	Disable_issuer       = 0x40
+	Witness_fed_asset    = 0x80
+	Committee_fed_asset  = 0x100
+	Default_Permissions  = Charge_market_fee | White_list | Override_authority | Transfer_restricted
+)
+
 /*更新 token*/
 func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...string) (string, error) {
 
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
-
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -177,7 +189,7 @@ func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...stri
 		MarketFeePercent:  0,
 		MaxMarketFee:      0,
 		Flags:             0,
-		IssuerPermissions: 79,
+		IssuerPermissions: uint64(update_asset_info.Options.IssuerPermissions.Int64()),
 		Description:       String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:        []interface{}{},
 	}
@@ -215,10 +227,13 @@ func ReserveToken(symbol string, amount float64) (string, error) {
 }
 
 /*创建 token*/
-func CreateToken(symbol string, max_supply, precision uint64) (string, error) {
-
+func CreateToken(symbol string, max_supply, precision uint64, issuer_permissions ...int) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	permissions := Default_Permissions
+	if len(issuer_permissions) > 0 {
+		permissions = issuer_permissions[0]
 	}
 	new_precision := uint64(math.Pow10(int(precision)))
 
@@ -227,7 +242,7 @@ func CreateToken(symbol string, max_supply, precision uint64) (string, error) {
 		MarketFeePercent:  0,
 		MaxMarketFee:      0,
 		Flags:             0,
-		IssuerPermissions: 79,
+		IssuerPermissions: uint64(permissions),
 		Description:       String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:        []interface{}{},
 	}
