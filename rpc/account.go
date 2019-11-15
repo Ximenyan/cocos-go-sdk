@@ -204,18 +204,16 @@ func BroadcastTransactionWithHandler(tx interface{}, handler ...func(r *RpcResp)
 	return Client.SendWithHandler(req, handler[0])
 }
 
-func BroadcastTransaction(tx interface{}) error {
+func BroadcastTransaction(tx interface{}) (tx_hash string, err error) {
 	req := CreateRpcRequest(CALL,
 		[]interface{}{BROADCAST_API_ID, `broadcast_transaction`,
 			[]interface{}{tx}})
 	if resp, err := Client.Send(req); err == nil {
-		txId := ""
-		if err = resp.GetInterface(&txId); err == nil {
-			log.Println("BroadcastTransaction TXID::", txId)
-			return nil
+		if err = resp.GetInterface(&tx_hash); err == nil {
+			return tx_hash, err
 		}
-		return err
+		return tx_hash, err
 	} else {
-		return err
+		return tx_hash, err
 	}
 }

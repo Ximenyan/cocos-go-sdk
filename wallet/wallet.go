@@ -131,13 +131,13 @@ func (w *Wallet) DeleteAccountByName(name ...string) (err error) {
 }
 
 //创建账户
-func (w *Wallet) CreateAccount(name string, password string) (err error) {
+func (w *Wallet) CreateAccount(name string, password string) (tx_hash string, err error) {
 	w.Lock()
 	defer w.Unlock()
 	if w.Default.Info == nil {
 		w.Default.Info = rpc.GetAccountInfoByName(w.Default.Name)
 	}
-	w.Accounts[name], err = w.registerAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID)
+	w.Accounts[name], tx_hash, err = w.registerAccount(w.Default.GetActiveKey(), name, password, w.Default.Info.ID)
 	w.save()
 	return
 }
@@ -208,7 +208,7 @@ func (w *Wallet) IsEmpty() bool {
 }
 
 //Transfer
-func (w *Wallet) Transfer(to, symbol string, value float64, memo ...string) error {
+func (w *Wallet) Transfer(to, symbol string, value float64, memo ...string) (string, error) {
 	var memo_str string
 	if len(memo) > 0 {
 		memo_str = memo[0]
@@ -218,13 +218,13 @@ func (w *Wallet) Transfer(to, symbol string, value float64, memo ...string) erro
 }
 
 //upgrade_account
-func (w *Wallet) UpgradeAccount(name string) error {
+func (w *Wallet) UpgradeAccount(name string) (string, error) {
 	info := rpc.GetAccountInfoByName(name)
 	t := CreateUpgradeAccount(name, info.ID)
 	return w.SignAndSendTX(OP_UPGRADE_ACCOUNT, t)
 }
 
-func (w *Wallet) RegisterNhAssetCreator(name string) error {
+func (w *Wallet) RegisterNhAssetCreator(name string) (string, error) {
 	info := rpc.GetAccountInfoByName(name)
 	t := &NhAssetCreator{
 		FeePayingAccount: ObjectId(info.ID),
@@ -249,12 +249,12 @@ func (w *Wallet) SetDefaultAccount(name, password string) error {
 	}
 	return errors.New("no account name:" + name)
 }
-func (w *Wallet) SignAndSendTX(opID int, t Object, prk ...*PrivateKey) error {
+func (w *Wallet) SignAndSendTX(opID int, t Object, prk ...*PrivateKey) (tx_hash string, err error) {
 	if len(prk) <= 0 {
 		prk = []*PrivateKey{w.Default.GetActiveKey()}
 	}
 	if st, err := CreateSignTransaction(opID, t, prk...); err != nil {
-		return err
+		return tx_hash, err
 	} else {
 		return rpc.BroadcastTransaction(st)
 	}
@@ -264,8 +264,9 @@ func (w *Wallet) CreateKey() PrivateKey {
 }
 
 /*注册賬戶*/
-func (w *Wallet) registerAccount(prk *PrivateKey, name string, password string, registrar string) (*Account, error) {
+func (w *Wallet) registerAccount(prk *PrivateKey, name string, password string, registrar string) (*Account, string, error) {
 	acct := CreateAccount(name, password)
 	c := CreateRegisterData(acct.GetActiveKey().GetPublicKey().ToBase58String(), acct.GetOwnerKey().GetPublicKey().ToBase58String(), name, registrar, registrar)
-	return acct, w.SignAndSendTX(OP_CREATE_ACCOUNT, c)
+	tx_hash, err := w.SignAndSendTX(OP_CREATE_ACCOUNT, c)
+	return acct, tx_hash, err
 }

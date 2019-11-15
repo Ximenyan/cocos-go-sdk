@@ -89,23 +89,16 @@ func (c *RpcClient) handler() {
 		ret := &RpcResp{}
 		notice := &Notice{}
 		if err := websocket.Message.Receive(c.ws, &reply); err == nil {
-			//fmt.Println("-------------------")
-			//log.Println(reply)
 			if err = json.Unmarshal([]byte(reply), ret); err == nil && ret.Id != `` {
 				if f, ok := c.Handler.Load(ret.Id); ok {
-					//fmt.Println("-------------------")
 					go f.(func(r *RpcResp) error)(ret)
 					c.Handler.Delete(ret.Id)
 				}
 			} else if err = json.Unmarshal([]byte(reply), notice); err == nil {
-				//log.Println(notice.Params[0].(string))
 				if f, ok := c.SubscribeHandler.Load(notice.Params[0].(string)); ok {
 					go f.(func(r *Notice) error)(notice)
 				}
-			} else {
-				log.Println("xxxxxxxxxxx")
 			}
-
 		}
 	}
 }
@@ -136,7 +129,6 @@ func (c *RpcClient) Subscribe(subscribe string, f func(r *Notice) error) (ret *R
 func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 	ret = &RpcResp{}
 	reqJson := reqData.ToString()
-	//log.Println(reqJson)
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
 		ch := make(chan *RpcResp)
 		c.Handler.Store(strconv.Itoa(int(reqData.Id)), func(r *RpcResp) error {
@@ -153,34 +145,4 @@ func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 		}
 	}
 	return
-	//废弃的 HTTP rpc
-	/*
-		log.Println("rpc Send start:::", reqJson)
-		connectTimer := time.NewTimer(RPCCLIENT_TIMEOUT * time.Second)
-		payloadBuffer := bytes.NewReader(reqJsonByte)
-		req, err := http.NewRequest("POST", c.serverAddr, payloadBuffer)
-		if err != nil {
-			log.Println("rpc Send error:::", err)
-			return
-		}
-		req.Header.Add("Content-Type", "application/json;charset=utf-8")
-		req.Header.Add("Accept", "application/json")
-		resp, err := c.doTimeoutRequest(connectTimer, req)
-		if err != nil {
-			log.Println("rpc Send error:::", err)
-			return
-		}
-		defer resp.Body.Close()
-		data, err := ioutil.ReadAll(resp.Body)
-		log.Println("rpc Send:::", string(data))
-		if err != nil {
-			return
-		}
-		if resp.StatusCode != 200 {
-			err = errors.New("HTTP error: " + resp.Status)
-			return
-		}
-		//fmt.Println(string(data))
-		json.Unmarshal(data, ret)
-		return*/
 }

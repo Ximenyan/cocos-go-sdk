@@ -42,20 +42,20 @@ func TestTransfer(t *testing.T) {
 	//TransferNhAsset("gggg2", "4.2.2")
 
 	//质押gas
-	err := Pledgegas("gggg2", 100)
-	t.Log(err)
+	hash, err := Pledgegas("gggg2", 100)
+	t.Log(hash, err)
 	//赎回
-	err = Pledgegas("gggg2", 0)
-	t.Log(err)
+	hash, err = Pledgegas("gggg2", 0)
+	t.Log(hash, err)
 	//投票
-	err = Vote("1.5.6", 100)
-	t.Log(err)
+	hash, err = Vote("1.5.6", 100)
+	t.Log(hash, err)
 	//投票赎回
-	err = Vote("1.5.6", 0)
-	t.Log(err)
+	hash, err = Vote("1.5.6", 0)
+	t.Log(hash, err)
 	//查询可领取的冻结资产
 	GetVestingBalances()
 	//领取冻结资产
-	err = WithdrawVestingBalance("1.13.30")
-	t.Log(err)
+	hash, err = WithdrawVestingBalance("1.13.30")
+	t.Log(hash, err)
 }
