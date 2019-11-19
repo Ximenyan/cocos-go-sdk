@@ -2,7 +2,6 @@ package rpc
 
 import (
 	. "cocos-go-sdk/type"
-	"log"
 )
 
 type History []struct {
@@ -26,11 +25,7 @@ func GetAccountHistory(acct_id string) History {
 			[]interface{}{HISTORY_API_ID, `get_account_history`,
 				[]interface{}{acct_id, last, 100, start}})
 		if resp, err := Client.Send(req); err == nil {
-			log.Println(resp.Result)
 			if err = resp.GetInterface(&historys); err == nil {
-				for i := 0; i < len(historys); i++ {
-					log.Println(i, historys[i].ID)
-				}
 				Historys = append(Historys, historys...)
 				start = historys[len(historys)-1].ID
 				if len(historys) < 50 {
@@ -48,7 +43,6 @@ func GetFillOrderHistory(asset_id, _asset_id string, limit uint64) []interface{}
 			[]interface{}{asset_id, _asset_id, limit}})
 	historys := &[]interface{}{}
 	if resp, err := Client.Send(req); err == nil {
-		log.Println(resp.Result)
 		if err = resp.GetInterface(historys); err == nil {
 			return *historys
 		}
@@ -62,7 +56,6 @@ func GetMarketHistory(asset_id, _asset_id, start, end string, limit uint64) []in
 			[]interface{}{asset_id, _asset_id, limit, start, end}})
 	historys := &[]interface{}{}
 	if resp, err := Client.Send(req); err == nil {
-		log.Println(resp.Result)
 		if err = resp.GetInterface(historys); err == nil {
 			return *historys
 		}

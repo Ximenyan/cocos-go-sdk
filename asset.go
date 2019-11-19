@@ -8,7 +8,7 @@ import (
 )
 
 /*吃单 NH 资产买入*/
-func FillNhAsset(order_id string) error {
+func FillNhAsset(order_id string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -27,7 +27,7 @@ func FillNhAsset(order_id string) error {
 }
 
 /*取消 NH 资产卖出单*/
-func CancelNhAssetOrder(order_id string) error {
+func CancelNhAssetOrder(order_id string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -40,7 +40,7 @@ func CancelNhAssetOrder(order_id string) error {
 }
 
 /*NH 资产卖出单*/
-func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price_asset string, pending_order_fee_amount, price_amount uint64) error {
+func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price_asset string, pending_order_fee_amount, price_amount uint64) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -63,7 +63,7 @@ func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price
 }
 
 /*NH 资产删除*/
-func DeleteNhAsset(asset_id string) error {
+func DeleteNhAsset(asset_id string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -76,7 +76,7 @@ func DeleteNhAsset(asset_id string) error {
 }
 
 /*NH 资产转账*/
-func TransferNhAsset(to_name, asset_id string) error {
+func TransferNhAsset(to_name, asset_id string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -90,7 +90,7 @@ func TransferNhAsset(to_name, asset_id string) error {
 }
 
 /*創建NH資產*/
-func CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) error {
+func CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -106,7 +106,7 @@ func CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) e
 }
 
 /*批准 关联世界观的提议*/
-func ApprovalsProposal(proposal_id string) error {
+func ApprovalsProposal(proposal_id string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -125,7 +125,7 @@ func ApprovalsProposal(proposal_id string) error {
 }
 
 /*提议关联世界观*/
-func RelateWorldView(world_view string) error {
+func RelateWorldView(world_view string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -151,7 +151,7 @@ func RelateWorldView(world_view string) error {
 }
 
 /*創建世界觀*/
-func CreateWorldView(name string) error {
+func CreateWorldView(name string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -163,11 +163,23 @@ func CreateWorldView(name string) error {
 	return Wallet.SignAndSendTX(OP_CREATE_WORLDVIEW, world_view)
 }
 
+const (
+	Charge_market_fee    = 0x01
+	White_list           = 0x02
+	Override_authority   = 0x04
+	Transfer_restricted  = 0x08
+	Gisable_force_settle = 0x10
+	Global_settle        = 0x20
+	Disable_issuer       = 0x40
+	Witness_fed_asset    = 0x80
+	Committee_fed_asset  = 0x100
+	Default_Permissions  = Charge_market_fee | White_list | Override_authority | Transfer_restricted
+)
+
 /*更新 token*/
-func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...string) error {
+func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...string) (string, error) {
 
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
-
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -177,7 +189,7 @@ func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...stri
 		MarketFeePercent:  0,
 		MaxMarketFee:      0,
 		Flags:             0,
-		IssuerPermissions: 79,
+		IssuerPermissions: uint64(update_asset_info.Options.IssuerPermissions.Int64()),
 		Description:       String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:        []interface{}{},
 	}
@@ -199,7 +211,7 @@ func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...stri
 }
 
 /*销毁 token*/
-func ReserveToken(symbol string, amount float64) error {
+func ReserveToken(symbol string, amount float64) (string, error) {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
 	precision := math.Pow10(asset_info.Precision)
 
@@ -215,10 +227,13 @@ func ReserveToken(symbol string, amount float64) error {
 }
 
 /*创建 token*/
-func CreateToken(symbol string, max_supply, precision uint64) error {
-
+func CreateToken(symbol string, max_supply, precision uint64, issuer_permissions ...int) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
+	}
+	permissions := Default_Permissions
+	if len(issuer_permissions) > 0 {
+		permissions = issuer_permissions[0]
 	}
 	new_precision := uint64(math.Pow10(int(precision)))
 
@@ -227,7 +242,7 @@ func CreateToken(symbol string, max_supply, precision uint64) error {
 		MarketFeePercent:  0,
 		MaxMarketFee:      0,
 		Flags:             0,
-		IssuerPermissions: 79,
+		IssuerPermissions: uint64(permissions),
 		Description:       String(`{"main":"` + symbol + `","short_name":"","market":""}`),
 		Extensions:        []interface{}{},
 	}
@@ -242,7 +257,7 @@ func CreateToken(symbol string, max_supply, precision uint64) error {
 }
 
 /*发行人 可以领取累计的手续费*/
-func ClaimFees(symbol string, value float64) error {
+func ClaimFees(symbol string, value float64) (string, error) {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
 	precision := math.Pow10(asset_info.Precision)
 	ctf := &ClaimTokenFees{
@@ -254,7 +269,7 @@ func ClaimFees(symbol string, value float64) error {
 }
 
 /*注资手续费池*/
-func TokenFundFeePool(symbol string, amount float64) error {
+func TokenFundFeePool(symbol string, amount float64) (string, error) {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
 	precision := math.Pow10(asset_info.Precision)
 	if Wallet.Default.Info == nil {
@@ -269,7 +284,7 @@ func TokenFundFeePool(symbol string, amount float64) error {
 	return Wallet.SignAndSendTX(OP_FUND_FEEPOOL, feePool)
 }
 
-func Pledgegas(beneficiary string, collateral float64) error {
+func Pledgegas(beneficiary string, collateral float64) (string, error) {
 	//m_info := rpc.GetAccountInfoByName(mortgager)
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
@@ -306,7 +321,7 @@ func CreateVestingBalance(symbol string, amount float64) error {
 	return Wallet.SignAndSendTX(OP_VESTING_CREATE, v)
 }*/
 
-func WithdrawVestingBalance(balance_id string) error {
+func WithdrawVestingBalance(balance_id string) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -327,7 +342,7 @@ func WithdrawVestingBalance(balance_id string) error {
 }
 
 /*发币*/
-func IssueToken(symbol, issue_to_account string, amount float64) error {
+func IssueToken(symbol, issue_to_account string, amount float64) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
@@ -344,16 +359,16 @@ func IssueToken(symbol, issue_to_account string, amount float64) error {
 }
 
 //投票
-func Vote(id string, value float64) error {
+func Vote(id string, value float64) (tx_hash string, err error) {
 	tk_info := rpc.GetTokenInfo(COCOS_ID)
 	precision := math.Pow10(tk_info.Precision)
 	info := rpc.GetObject(id)
 	if info == nil {
-		return errors.New("vote error:get vote_id error!!")
+		return tx_hash, errors.New("vote error:get vote_id error!!")
 	}
 	vote_id := info.Get("vote_id").String()
 	if vote_id == "" {
-		return errors.New("vote error:get vote_id error!!")
+		return tx_hash, errors.New("vote error:get vote_id error!!")
 	}
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
