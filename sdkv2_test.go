@@ -4,34 +4,39 @@ import (
 	//"encoding/json"
 	//"CocosSDK/wallet"
 	//"CocosSDK/type"
+	//"CocosSDK/rpc"
 	"testing"
 )
 
 func TestInitSdk2(t *testing.T) {
-	InitSDK("123.56.98.47", 80, false)
+	InitSDK("test.cocosbcx.net", 80, false)
 }
 
 func TestWallet(t *testing.T) {
 	//导入账户
-	Wallet.ImportAccount("gggg1", "12345678")
+	Wallet.ImportAccount("ggggxxx", "12345678")
 	//设置默认账户
-	Wallet.SetDefaultAccount("gggg1", "12345678")
+	Wallet.SetDefaultAccount("ggggxxx", "12345678")
 }
 
 func TestTransfer(t *testing.T) {
-
+	t.Log(Wallet.Default.GetActiveKey().GetPublicKey().ToBase58String())
+	t.Log(Wallet.Default.GetOwnerKey().GetPublicKey().ToBase58String())
+	t.Log(Wallet.Transfer("test1", "COCOS", 1))
+	t.Log(Wallet.Transfer("test1", "COCOS", 1, "xxxx"))
+	t.Log(Wallet.TransferEncodeMemo("test1", "COCOS", 1, "xxxx"))
 	//查询投票信息
 	//vote_info := GetVotingInfo()
 	//t.Log(vote_info)
 	//Wallet.Transfer("ximenyan1111", "COCOS", 1, "xixixi")
-	//Wallet.CreateAccount("ccccqwe123", "123345")
+
 	//Wallet.UpgradeAccount("ximenyan1111")
 	//Wallet.RegisterNhAssetCreator("ximenyan1111")
 	//CreateToken("C5C5S", 1000000, 3)
 	//IssueToken("C4C4S", "gggg2", 1000)
 	//ReserveToken("C4C4S", 1)
 	//Wallet.RegisterNhAssetCreator("gggg2")
-	UpdateToken("C5C5S", 10000000, 7)
+	//UpdateToken("C5C5S", 10000000, 7)
 	//CreateWorldView("BCX")
 	//CreateNhAsset("COCOS", "BCX", "gggg1", `{"name":"乾坤大挪移"}`)
 	//SellNhAsset("ximenyan1111", "4.2.1", "便宜货...", COCOS_ID, COCOS_ID, 5, 100)

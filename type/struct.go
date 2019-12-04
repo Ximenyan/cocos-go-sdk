@@ -248,6 +248,19 @@ func (o OPArray) GetBytes() []byte {
 	return byte_s
 }
 
+type OpMemo []Object
+
+func (o OpMemo) GetBytes() []byte {
+	byte_s := common.Varint(1)
+	if len(o[0].GetBytes()) == 1 && o[0].GetBytes()[0] == 1 {
+		byte_s = byte_s[0:0]
+	}
+	for i := 0; i < len(o); i++ {
+		byte_s = append(byte_s, o[i].GetBytes()...)
+	}
+	return byte_s
+}
+
 type Approvals struct {
 	FeePayingAccount        ObjectId   `json:"fee_paying_account"`
 	Proposal                ObjectId   `json:"proposal"`
@@ -709,7 +722,7 @@ type Transaction struct {
 	From           ObjectId   `json:"from"`
 	To             ObjectId   `json:"to"`
 	AmountData     Amount     `json:"amount"`
-	MemoData       *Memo      `json:"memo,omitempty"`
+	MemoData       *OpMemo    `json:"memo,omitempty"`
 	ExtensionsData Extensions `json:"extensions"`
 }
 type Operation []interface{}
