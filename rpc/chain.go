@@ -254,7 +254,7 @@ type Votings struct {
 		CashbackVotePeriodSeconds        int           `json:"cashback_vote_period_seconds"`
 		WitnessPayPerBlock               int           `json:"witness_pay_per_block"`
 		WitnessPayVestingSeconds         int           `json:"witness_pay_vesting_seconds"`
-		WorkerBudgetPerDay               string        `json:"worker_budget_per_day"`
+		WorkerBudgetPerDay               BigInt        `json:"worker_budget_per_day"`
 		AccountsPerFeeScale              int           `json:"accounts_per_fee_scale"`
 		AccountFeeScaleBitshifts         int           `json:"account_fee_scale_bitshifts"`
 		MaxAuthorityDepth                int           `json:"max_authority_depth"`

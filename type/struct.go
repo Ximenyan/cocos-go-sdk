@@ -95,11 +95,9 @@ func (o Memo) GetBytes() []byte {
 	nonce := common.VarUint(o.Nonce, 64)
 	msg, _ := hex.DecodeString(o.Message)
 	msg = append(common.Varint(uint64(len(msg))), msg...)
-	byte_s := append([]byte{0x01},
-		append(from,
-			append(to,
-				append(nonce, msg...)...)...)...,
-	)
+	byte_s := append(append(from,
+		append(to,
+			append(nonce, msg...)...)...))
 	return byte_s
 }
 
@@ -252,9 +250,6 @@ type OpMemo []Object
 
 func (o OpMemo) GetBytes() []byte {
 	byte_s := common.Varint(1)
-	if len(o[0].GetBytes()) == 1 && o[0].GetBytes()[0] == 1 {
-		byte_s = byte_s[0:0]
-	}
 	for i := 0; i < len(o); i++ {
 		byte_s = append(byte_s, o[i].GetBytes()...)
 	}
