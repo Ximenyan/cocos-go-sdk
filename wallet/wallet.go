@@ -217,7 +217,7 @@ func (w *Wallet) IsEmpty() bool {
 }
 
 //Transfer
-func (w *Wallet) Transfer(to, symbol string, value float64, memo ...string) (string, error) {
+func (w *Wallet) Transfer(to, symbol string, value uint64, memo ...string) (string, error) {
 	var memo_str string
 	if len(memo) > 0 {
 		memo_str = memo[0]
@@ -226,7 +226,7 @@ func (w *Wallet) Transfer(to, symbol string, value float64, memo ...string) (str
 	return w.SignAndSendTX(OP_TRANSFER, t)
 }
 
-func (w *Wallet) TransferEncodeMemo(to, symbol string, value float64, memo ...string) (string, error) {
+func (w *Wallet) TransferEncodeMemo(to, symbol string, value uint64, memo ...string) (string, error) {
 	var memo_str string
 	if len(memo) > 0 {
 		memo_str = memo[0]

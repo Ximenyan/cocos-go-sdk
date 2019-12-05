@@ -9,7 +9,7 @@ import (
 )
 
 func TestInitSdk2(t *testing.T) {
-	InitSDK("test.cocosbcx.net", 80, false)
+	InitSDK("test.cocosbcx.net", false, 80)
 }
 
 func TestWallet(t *testing.T) {

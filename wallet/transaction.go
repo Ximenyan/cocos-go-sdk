@@ -8,7 +8,6 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
-	"math"
 	"math/rand"
 	"strconv"
 	"time"
@@ -19,7 +18,7 @@ import (
 	. "CocosSDK/type"
 )
 
-func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value float64, memo string, encode bool) *Transaction {
+func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value uint64, memo string, encode bool) *Transaction {
 	to_info := rpc.GetAccountInfoByName(to_name)
 	to_puk := to_info.GetActivePuKey()
 	from_info := rpc.GetAccountInfoByName(from_name)
@@ -35,10 +34,8 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 		memoData = nil
 	}
 	tk_info := rpc.GetTokenInfoBySymbol(tk_symbol)
-
-	precision := math.Pow10(tk_info.Precision)
 	t := &Transaction{
-		AmountData:     Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(tk_info.ID)},
+		AmountData:     Amount{Amount: value, AssetID: ObjectId(tk_info.ID)},
 		ExtensionsData: []interface{}{},
 		From:           ObjectId(from_info.ID),
 		To:             ObjectId(to_info.ID),
