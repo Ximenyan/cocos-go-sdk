@@ -45,11 +45,15 @@ func SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	otcaccount_info := rpc.GetAccountInfoByName(otcaccount_name)
+	pending_asset_info := rpc.GetTokenInfo(pending_order_fee_asset)
+	price_asset_info := rpc.GetTokenInfo(price_asset)
+	pending_precision := math.Pow10(pending_asset_info.Precision)
+	price_precision := math.Pow10(price_asset_info.Precision)
 	tx := &NhOrder{
 		NhAsset: ObjectId(asset_id),
 
-		PendingOrdersFee: Amount{Amount: pending_order_fee_amount, AssetID: ObjectId(pending_order_fee_asset)},
-		Price:            Amount{Amount: price_amount, AssetID: ObjectId(price_asset)},
+		PendingOrdersFee: Amount{Amount: uint64(float64(pending_order_fee_amount) * pending_precision), AssetID: ObjectId(pending_order_fee_asset)},
+		Price:            Amount{Amount: uint64(float64(price_amount) * price_precision), AssetID: ObjectId(price_asset)},
 		Seller:           ObjectId(Wallet.Default.Info.ID),
 		Otcaccount:       ObjectId(otcaccount_info.ID),
 		Expiration:       GetExpiration(),
@@ -207,15 +211,17 @@ func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...stri
 }
 
 /*销毁 token*/
-func ReserveToken(symbol string, amount uint64) (string, error) {
+func ReserveToken(symbol string, amount float64) (string, error) {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
+
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	AssetData := &ReserveTokenData{
 		Extensions:      []interface{}{},
 		Payer:           ObjectId(Wallet.Default.Info.ID),
-		AmountToReserve: Amount{Amount: amount, AssetID: ObjectId(asset_info.ID)},
+		AmountToReserve: Amount{Amount: uint64(float64(amount) * precision), AssetID: ObjectId(asset_info.ID)},
 	}
 	return Wallet.SignAndSendTX(OP_RESERVE_TOKEN, AssetData)
 }
@@ -251,43 +257,45 @@ func CreateToken(symbol string, max_supply, precision uint64, issuer_permissions
 }
 
 /*发行人 可以领取累计的手续费*/
-func ClaimFees(symbol string, value uint64) (string, error) {
+func ClaimFees(symbol string, value float64) (string, error) {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
 	ctf := &ClaimTokenFees{
 		Extensions:    []interface{}{},
 		Issuer:        ObjectId(Wallet.Default.Info.ID),
-		AmountToClaim: Amount{Amount: value, AssetID: ObjectId(asset_info.ID)},
+		AmountToClaim: Amount{Amount: uint64(float64(value) * precision), AssetID: ObjectId(asset_info.ID)},
 	}
 	return Wallet.SignAndSendTX(OP_CLAIM_FEES, ctf)
 }
 
 /*注资手续费池*/
-func TokenFundFeePool(symbol string, amount uint64) (string, error) {
+func TokenFundFeePool(symbol string, amount float64) (string, error) {
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
+	precision := math.Pow10(asset_info.Precision)
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	feePool := &TokenFeePoolData{
 		AssetID:     ObjectId(asset_info.ID),
 		FromAccount: ObjectId(Wallet.Default.Info.ID),
-		Amount:      amount,
+		Amount:      uint64(float64(amount) * precision),
 		Extensions:  []interface{}{},
 	}
 	return Wallet.SignAndSendTX(OP_FUND_FEEPOOL, feePool)
 }
 
-func Pledgegas(beneficiary string, collateral uint64) (string, error) {
+func Pledgegas(beneficiary string, collateral float64) (string, error) {
 	//m_info := rpc.GetAccountInfoByName(mortgager)
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	b_info := rpc.GetAccountInfoByName(beneficiary)
-	//tk_info := rpc.GetTokenInfo(COCOS_ID)
-	//precision := math.Pow10(tk_info.Precision)
+	tk_info := rpc.GetTokenInfo(COCOS_ID)
+	precision := math.Pow10(tk_info.Precision)
 	p := &PledgeGas{
 		Mortgager:   ObjectId(Wallet.Default.Info.ID),
 		Beneficiary: ObjectId(b_info.ID),
-		Collateral:  collateral,
+		Collateral:  uint64(collateral * precision),
 	}
 	return Wallet.SignAndSendTX(OP_PLEDGE_GAS, p)
 }
@@ -334,26 +342,26 @@ func WithdrawVestingBalance(balance_id string) (string, error) {
 }
 
 /*发币*/
-func IssueToken(symbol, issue_to_account string, amount uint64) (string, error) {
+func IssueToken(symbol, issue_to_account string, amount float64) (string, error) {
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	to_info := rpc.GetAccountInfoByName(issue_to_account)
 	asset_info := rpc.GetTokenInfoBySymbol(symbol)
-	//precision := math.Pow10(asset_info.Precision)
+	precision := math.Pow10(asset_info.Precision)
 	issue := &IssueAsset{
 		Extensions:     []interface{}{},
 		Issuer:         ObjectId(Wallet.Default.Info.ID),
 		IssueToAccount: ObjectId(to_info.ID),
-		AssetToIssue:   Amount{Amount: amount, AssetID: ObjectId(asset_info.ID)},
+		AssetToIssue:   Amount{Amount: uint64(amount * precision), AssetID: ObjectId(asset_info.ID)},
 	}
 	return Wallet.SignAndSendTX(OP_ISSUE_TOKEN, issue)
 }
 
 //投票
-func Vote(id string, value uint64) (tx_hash string, err error) {
-	//tk_info := rpc.GetTokenInfo(COCOS_ID)
-	//precision := math.Pow10(tk_info.Precision)
+func Vote(id string, value float64) (tx_hash string, err error) {
+	tk_info := rpc.GetTokenInfo(COCOS_ID)
+	precision := math.Pow10(tk_info.Precision)
 	info := rpc.GetObject(id)
 	if info == nil {
 		return tx_hash, errors.New("vote error:get vote_id error!!")
@@ -366,8 +374,7 @@ func Vote(id string, value uint64) (tx_hash string, err error) {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
 	v := &VoteData{
-		//LockWithVote: OPArray{Int32(0), Amount{Amount: uint64(value * precision), AssetID: COCOS_ID}},
-		LockWithVote: OPArray{Int32(0), Amount{Amount: value, AssetID: COCOS_ID}},
+		LockWithVote: OPArray{Int32(0), Amount{Amount: uint64(value * precision), AssetID: COCOS_ID}},
 		Account:      ObjectId(Wallet.Default.Info.ID),
 		NewOptions: NewOptions{
 			MemoKey:    Wallet.Default.GetMemoKey().GetPublicKey().ToBase58String(),
@@ -404,9 +411,6 @@ func GetNhAssetList(acc_name string, page, page_size, _type int, world_view ...s
 /*查询账户Balance*/
 func GetAccountBalances(acc_name string) *[]rpc.Balance {
 	acc_info := rpc.GetAccountInfoByName(acc_name)
-	if acc_info == nil {
-		return nil
-	}
 	return rpc.GetAccountBalances(acc_info.ID)
 }
 
