@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"log"
 	"math/big"
+	"math/rand"
 	"time"
 
 	"CocosSDK/common/math"
@@ -20,10 +21,24 @@ type PrivateKey struct {
 
 var VERSION []byte = []byte{0x80}
 
+func GetRandomString(length int) string {
+	str := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	bytes := []byte(str)
+	result := []byte{}
+	rand.Shuffle(len(bytes), func(i, j int) {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	})
+	var r *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < length; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	return string(result)
+}
+
 func CreatePrivateKey() PrivateKey {
-	str := time.Now().String()
+	//str := time.Now().String()
 	h := sha256.New()
-	h.Write([]byte(str))
+	h.Write([]byte(GetRandomString(32)))
 	sum := h.Sum(nil)
 	checkSum := sha256.Sum256(sum)
 	return PrivateKey{sum, checkSum[:4]}
