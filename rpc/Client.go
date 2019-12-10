@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	TIMEOUT     = 2 //超时时间
-	HEARTBEAT   = 5 //心跳间隔
-	Reconnect   = 5 //重连间隔
-	RESEND_TIME = 0 //重发次数
+	TIMEOUT     = 10 //超时时间
+	HEARTBEAT   = 30 //心跳间隔
+	Reconnect   = 10 //重连间隔
+	RESEND_TIME = 3  //重发次数
 )
 
 // 连接参数
@@ -157,6 +157,10 @@ func (c *RpcClient) Send(reqData *RpcRequest, resend ...int) (ret *RpcResp, err 
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
 		ch := make(chan *RpcResp)
 		c.Handler.Store(strconv.Itoa(int(reqData.Id)), func(r *RpcResp) error {
+			defer func() {
+				if e := recover(); e != nil {
+				}
+			}()
 			ch <- r
 			return nil
 		})
@@ -164,6 +168,7 @@ func (c *RpcClient) Send(reqData *RpcRequest, resend ...int) (ret *RpcResp, err 
 		case ret = <-ch:
 			return
 		case <-time.After(time.Second * TIMEOUT):
+			c.Handler.Delete(strconv.Itoa(int(reqData.Id)))
 			if len(resend) > 0 && resend[0] > 1 {
 				ret, err = c.Send(reqData, resend[0]-1)
 			} else if len(resend) == 0 {
