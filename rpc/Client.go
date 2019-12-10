@@ -16,7 +16,10 @@ import (
 )
 
 const (
-	RPCCLIENT_TIMEOUT = 300
+	TIMEOUT     = 2 //超时时间
+	HEARTBEAT   = 5 //心跳间隔
+	Reconnect   = 5 //重连间隔
+	RESEND_TIME = 0 //重发次数
 )
 
 // 连接参数
@@ -61,9 +64,23 @@ func newClient(host string, useSSL bool, port ...int) (c *RpcClient, err error) 
 	if err != nil {
 		log.Fatal("init sdk error:::", err)
 	}
-	c = &RpcClient{httpClient: httpClient, ws: ws, Handler: &sync.Map{}, SubscribeHandler: &sync.Map{}}
+	c = &RpcClient{httpClient: httpClient,
+		ws:               ws,
+		Handler:          &sync.Map{},
+		SubscribeHandler: &sync.Map{}}
 	go c.handler()
+	go c.heartbeat()
 	return
+}
+
+func (c *RpcClient) heartbeat() {
+	for {
+		time.Sleep(time.Second * HEARTBEAT)
+		req := CreateRpcRequest(CALL,
+			[]interface{}{0, `get_dynamic_global_properties`,
+				[]interface{}{}})
+		c.Send(req)
+	}
 }
 
 // 超时处理
@@ -90,7 +107,6 @@ func (c *RpcClient) handler() {
 		ret := &RpcResp{}
 		notice := &Notice{}
 		if err := websocket.Message.Receive(c.ws, &reply); err == nil {
-			//fmt.Println(reply)
 			if err = json.Unmarshal([]byte(reply), ret); err == nil && ret.Id != `` {
 				if f, ok := c.Handler.Load(ret.Id); ok {
 					go f.(func(r *RpcResp) error)(ret)
@@ -99,6 +115,13 @@ func (c *RpcClient) handler() {
 			} else if err = json.Unmarshal([]byte(reply), notice); err == nil {
 				if f, ok := c.SubscribeHandler.Load(notice.Params[0].(string)); ok {
 					go f.(func(r *Notice) error)(notice)
+				}
+			}
+		} else {
+			for err != nil {
+				c.ws, err = websocket.Dial(c.ws.Config().Origin.String(), " ", c.ws.Config().Origin.String())
+				if err != nil {
+					time.Sleep(Reconnect * time.Second)
 				}
 			}
 		}
@@ -128,7 +151,7 @@ func (c *RpcClient) Subscribe(subscribe string, f func(r *Notice) error) (ret *R
 }
 
 //websocket
-func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
+func (c *RpcClient) Send(reqData *RpcRequest, resend ...int) (ret *RpcResp, err error) {
 	ret = &RpcResp{}
 	reqJson := reqData.ToString()
 	if err = websocket.Message.Send(c.ws, reqJson); err == nil {
@@ -140,9 +163,12 @@ func (c *RpcClient) Send(reqData *RpcRequest) (ret *RpcResp, err error) {
 		select {
 		case ret = <-ch:
 			return
-		case <-time.After(time.Second * 5):
-			err = errors.New("rpc time out!")
-			ret = nil
+		case <-time.After(time.Second * TIMEOUT):
+			if len(resend) > 0 && resend[0] > 1 {
+				ret, err = c.Send(reqData, resend[0]-1)
+			} else if len(resend) == 0 {
+				ret, err = c.Send(reqData, RESEND_TIME)
+			}
 			return
 		}
 	}

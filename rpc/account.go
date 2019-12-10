@@ -190,7 +190,10 @@ func GetAccountInfoByName(name string) *AccountInfo {
 		accounts := &AccountsInfo{}
 		if byte_s, err := json.Marshal(resp.Result); err == nil {
 			if err = json.Unmarshal(byte_s, accounts); err == nil {
-				return (*accounts)[0]
+				if len(*accounts) > 0 {
+					return (*accounts)[0]
+				}
+				return nil
 			}
 		}
 	}

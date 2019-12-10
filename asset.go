@@ -411,6 +411,9 @@ func GetNhAssetList(acc_name string, page, page_size, _type int, world_view ...s
 /*查询账户Balance*/
 func GetAccountBalances(acc_name string) *[]rpc.Balance {
 	acc_info := rpc.GetAccountInfoByName(acc_name)
+	if acc_info == nil {
+		return nil
+	}
 	return rpc.GetAccountBalances(acc_info.ID)
 }
 
