@@ -1,9 +1,9 @@
 package CocosSDK
 
 import (
-	"cocos-go-sdk/rpc"
-	. "cocos-go-sdk/type"
-        "errors"
+	"CocosSDK/rpc"
+	. "CocosSDK/type"
+	"errors"
 	"math"
 )
 

@@ -1,7 +1,7 @@
 package CocosSDK
 
 import (
-	"cocos-go-sdk/rpc"
+	"CocosSDK/rpc"
 
 	"github.com/tidwall/gjson"
 )

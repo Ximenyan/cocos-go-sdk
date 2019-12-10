@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	. "cocos-go-sdk/type"
+	. "CocosSDK/type"
 	"encoding/json"
 	"log"
 )
@@ -43,8 +43,8 @@ type AccountInfo struct {
 	Statistics                string `json:"statistics"`
 }
 type Balance struct {
-	Amount  interface{} `json:"amount"`
-	AssetID string      `json:"asset_id"`
+	Amount  BigInt `json:"amount"`
+	AssetID string `json:"asset_id"`
 }
 
 func (info AccountInfo) GetActivePuKey() string {

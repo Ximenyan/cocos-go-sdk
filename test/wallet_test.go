@@ -1,8 +1,8 @@
 package main
 
 import (
-	"cocos-go-sdk/rpc"
-	"cocos-go-sdk/wallet"
+	"CocosSDK/rpc"
+	"CocosSDK/wallet"
 	"testing"
 )
 

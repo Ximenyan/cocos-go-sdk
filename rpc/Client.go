@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	. "cocos-go-sdk/type"
+	. "CocosSDK/type"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -21,7 +21,6 @@ const (
 
 // 连接参数
 type RpcClient struct {
-	serverAddr       string
 	httpClient       *http.Client
 	ws               *websocket.Conn
 	Handler          *sync.Map
@@ -31,36 +30,38 @@ type RpcClient struct {
 var Client *RpcClient
 
 //初始化rpc客户端
-func InitClient(host string, port int, useSSL bool) (err error) {
-	Client, err = newClient(host, port, useSSL)
+func InitClient(host string, useSSL bool, port ...int) (err error) {
+	Client, err = newClient(host, useSSL, port...)
 	return
 }
 
 //连接配置
-func newClient(host string, port int, useSSL bool) (c *RpcClient, err error) {
+func newClient(host string, useSSL bool, port ...int) (c *RpcClient, err error) {
 	if len(host) == 0 {
 		err = errors.New("Bad call missing argument host")
 		return
 	}
-	var serverAddr string
 	var httpClient *http.Client
 	var ws *websocket.Conn
+	var port_str string
+
+	if len(port) > 0 {
+		port_str = fmt.Sprintf(":%d", port[0])
+	}
 	if useSSL {
-		serverAddr = "https://"
 		t := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 		httpClient = &http.Client{Transport: t}
-		ws, err = websocket.Dial("wss://"+host+":"+strconv.Itoa(port), "", "wss://"+host+":"+strconv.Itoa(port))
+		ws, err = websocket.Dial("wss://"+host+port_str, "", "wss://"+host+port_str)
 	} else {
-		serverAddr = "http://"
 		httpClient = &http.Client{}
-		ws, err = websocket.Dial("ws://"+host+":"+strconv.Itoa(port), "", "ws://"+host+":"+strconv.Itoa(port))
+		ws, err = websocket.Dial("ws://"+host+port_str, "", "ws://"+host+port_str)
 	}
 	if err != nil {
 		log.Fatal("init sdk error:::", err)
 	}
-	c = &RpcClient{serverAddr: fmt.Sprintf("%s%s:%d", serverAddr, host, port), httpClient: httpClient, ws: ws, Handler: &sync.Map{}, SubscribeHandler: &sync.Map{}}
+	c = &RpcClient{httpClient: httpClient, ws: ws, Handler: &sync.Map{}, SubscribeHandler: &sync.Map{}}
 	go c.handler()
 	return
 }
@@ -89,6 +90,7 @@ func (c *RpcClient) handler() {
 		ret := &RpcResp{}
 		notice := &Notice{}
 		if err := websocket.Message.Receive(c.ws, &reply); err == nil {
+			//fmt.Println(reply)
 			if err = json.Unmarshal([]byte(reply), ret); err == nil && ret.Id != `` {
 				if f, ok := c.Handler.Load(ret.Id); ok {
 					go f.(func(r *RpcResp) error)(ret)

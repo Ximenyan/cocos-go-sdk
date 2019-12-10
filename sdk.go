@@ -1,9 +1,9 @@
-package CocosSDK // import "cocos-go-sdk"
+package CocosSDK // import "CocosSDK"
 
 import (
-	"cocos-go-sdk/chain"
-	"cocos-go-sdk/rpc"
-	"cocos-go-sdk/wallet"
+	"CocosSDK/chain"
+	"CocosSDK/rpc"
+	"CocosSDK/wallet"
 	"log"
 	"sync"
 )
@@ -15,7 +15,7 @@ var Chain *chain.Chain
 /*
 *初始化SDK
  */
-func InitSDK(host string, port int, use_ssl bool) {
+func InitSDK(host string, use_ssl bool, port ...int) {
 	once.Do(
 		func() {
 			defer func() {
@@ -23,7 +23,7 @@ func InitSDK(host string, port int, use_ssl bool) {
 					log.Panicln("SDK Init Error:", err)
 				}
 			}()
-			if err := rpc.InitClient(host, port, use_ssl); err != nil {
+			if err := rpc.InitClient(host, use_ssl, port...); err != nil {
 				log.Panicln("SDK Init Error:", err)
 			}
 			chain.InitChain()

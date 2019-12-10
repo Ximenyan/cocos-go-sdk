@@ -1,8 +1,8 @@
 package rpc
 
 import (
-	"cocos-go-sdk/common"
-	. "cocos-go-sdk/type"
+	"CocosSDK/common"
+	. "CocosSDK/type"
 	"encoding/hex"
 	"encoding/json"
 	"log"
@@ -238,23 +238,24 @@ type Votings struct {
 			Scale              int             `json:"scale"`
 			MaximunHandlingFee int             `json:"maximun_handling_fee"`
 		} `json:"current_fees"`
-		BlockInterval                    int           `json:"block_interval"`
-		MaintenanceInterval              int           `json:"maintenance_interval"`
-		MaintenanceSkipSlots             int           `json:"maintenance_skip_slots"`
-		CommitteeProposalReviewPeriod    int           `json:"committee_proposal_review_period"`
-		MaximumBlockSize                 int           `json:"maximum_block_size"`
-		MaximumTimeUntilExpiration       int           `json:"maximum_time_until_expiration"`
-		MaximumProposalLifetime          int           `json:"maximum_proposal_lifetime"`
-		MaximumAssetFeedPublishers       int           `json:"maximum_asset_feed_publishers"`
-		WitnessNumberOfElection          int           `json:"witness_number_of_election"`
-		CommitteeNumberOfElection        int           `json:"committee_number_of_election"`
-		MaximumAuthorityMembership       int           `json:"maximum_authority_membership"`
-		CashbackGasPeriodSeconds         int           `json:"cashback_gas_period_seconds"`
-		CashbackVbPeriodSeconds          int           `json:"cashback_vb_period_seconds"`
-		CashbackVotePeriodSeconds        int           `json:"cashback_vote_period_seconds"`
-		WitnessPayPerBlock               int           `json:"witness_pay_per_block"`
-		WitnessPayVestingSeconds         int           `json:"witness_pay_vesting_seconds"`
-		WorkerBudgetPerDay               string        `json:"worker_budget_per_day"`
+		BlockInterval                 int `json:"block_interval"`
+		MaintenanceInterval           int `json:"maintenance_interval"`
+		MaintenanceSkipSlots          int `json:"maintenance_skip_slots"`
+		CommitteeProposalReviewPeriod int `json:"committee_proposal_review_period"`
+		MaximumBlockSize              int `json:"maximum_block_size"`
+		MaximumTimeUntilExpiration    int `json:"maximum_time_until_expiration"`
+		MaximumProposalLifetime       int `json:"maximum_proposal_lifetime"`
+		MaximumAssetFeedPublishers    int `json:"maximum_asset_feed_publishers"`
+		WitnessNumberOfElection       int `json:"witness_number_of_election"`
+		CommitteeNumberOfElection     int `json:"committee_number_of_election"`
+		MaximumAuthorityMembership    int `json:"maximum_authority_membership"`
+		CashbackGasPeriodSeconds      int `json:"cashback_gas_period_seconds"`
+		CashbackVbPeriodSeconds       int `json:"cashback_vb_period_seconds"`
+		CashbackVotePeriodSeconds     int `json:"cashback_vote_period_seconds"`
+		WitnessPayPerBlock            int `json:"witness_pay_per_block"`
+		WitnessPayVestingSeconds      int `json:"witness_pay_vesting_seconds"`
+
+		WorkerBudgetPerDay               BigInt        `json:"worker_budget_per_day"`
 		AccountsPerFeeScale              int           `json:"accounts_per_fee_scale"`
 		AccountFeeScaleBitshifts         int           `json:"account_fee_scale_bitshifts"`
 		MaxAuthorityDepth                int           `json:"max_authority_depth"`

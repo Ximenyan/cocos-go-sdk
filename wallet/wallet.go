@@ -1,9 +1,9 @@
 package wallet
 
 import (
-	"cocos-go-sdk/common"
-	"cocos-go-sdk/rpc"
-	. "cocos-go-sdk/type"
+	"CocosSDK/common"
+	"CocosSDK/rpc"
+	. "CocosSDK/type"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -146,7 +146,16 @@ func (w *Wallet) CreateAccount(name string, password string) (tx_hash string, er
 func (w *Wallet) ImportAccount(name string, password string) (err error) {
 	w.Lock()
 	defer w.Unlock()
-	w.Accounts[name] = CreateAccount(name, password)
+	acct_info := rpc.GetAccountInfoByName(name)
+	if acct_info == nil {
+		return errors.New("acct for name not exits!!")
+	}
+	acct := CreateAccount(name, password)
+	if acct.GetActiveKey().GetPublicKey().ToBase58String() != acct_info.GetActivePuKey() ||
+		acct.GetOwnerKey().GetPublicKey().ToBase58String() != acct_info.GetOwnerPuKey() {
+		return errors.New("password error!!")
+	}
+	w.Accounts[name] = acct
 	w.save()
 	return
 }
@@ -213,7 +222,17 @@ func (w *Wallet) Transfer(to, symbol string, value float64, memo ...string) (str
 	if len(memo) > 0 {
 		memo_str = memo[0]
 	}
-	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo_str)
+
+	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo_str, false)
+	return w.SignAndSendTX(OP_TRANSFER, t)
+}
+
+func (w *Wallet) TransferEncodeMemo(to, symbol string, value float64, memo ...string) (string, error) {
+	var memo_str string
+	if len(memo) > 0 {
+		memo_str = memo[0]
+	}
+	t := CreateTransaction(w.Default.GetActiveKey(), w.Default.Name, to, symbol, value, memo_str, true)
 	return w.SignAndSendTX(OP_TRANSFER, t)
 }
 

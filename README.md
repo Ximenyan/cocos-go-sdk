@@ -1,20 +1,25 @@
+# Go-SDK
 # Golang SDK For Cocos-BCX
 ## 安装
 
 ```
-git clone https://github.com/Ximenyan/cocos-go-sdk.git
+git clone https://github.com/Cocos-BCX/Go-SDK.git
 ```
-或者
+或者 
+```
+export GOPROXY=https://goproxy.cn
+```
+go.mod 增加
 
 ```
-go get github.com/Ximenyan/cocos-go-sdk
+replace CocosSDK => github.com/Cocos-BCX/Go-SDK
 ```
 
 ## 使用
 
 ```
 import (
-	sdk "cocos-go-sdk"
+	sdk "CocosSDK"
 	"fmt"
 )
 
@@ -403,3 +408,4 @@ func main() {
 方法： sdk.GetMarketHistory(asset_id, _asset_id, start, end string, limit uint64) []interface{}
 ```
 
+>>>>>>> cocos-go-sdk

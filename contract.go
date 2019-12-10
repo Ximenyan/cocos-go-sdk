@@ -1,8 +1,8 @@
 package CocosSDK
 
 import (
-	"cocos-go-sdk/rpc"
-	. "cocos-go-sdk/type"
+	"CocosSDK/rpc"
+	. "CocosSDK/type"
 	"io/ioutil"
 )
 

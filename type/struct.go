@@ -1,7 +1,7 @@
 package types
 
 import (
-	"cocos-go-sdk/common"
+	"CocosSDK/common"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"cocos-go-sdk/crypto/base58-go"
+	"CocosSDK/crypto/base58-go"
 )
 
 func PukBytesFromBase58String(base58Str string) []byte {
@@ -95,11 +95,10 @@ func (o Memo) GetBytes() []byte {
 	nonce := common.VarUint(o.Nonce, 64)
 	msg, _ := hex.DecodeString(o.Message)
 	msg = append(common.Varint(uint64(len(msg))), msg...)
-	byte_s := append([]byte{0x01},
-		append(from,
-			append(to,
-				append(nonce, msg...)...)...)...,
-	)
+
+	byte_s := append(append(from,
+		append(to,
+			append(nonce, msg...)...)...))
 	return byte_s
 }
 
@@ -241,6 +240,16 @@ func (o Array) GetBytes() []byte {
 type OPArray []Object
 
 func (o OPArray) GetBytes() []byte {
+	byte_s := common.Varint(1)
+	for i := 0; i < len(o); i++ {
+		byte_s = append(byte_s, o[i].GetBytes()...)
+	}
+	return byte_s
+}
+
+type OpMemo []Object
+
+func (o OpMemo) GetBytes() []byte {
 	byte_s := common.Varint(1)
 	for i := 0; i < len(o); i++ {
 		byte_s = append(byte_s, o[i].GetBytes()...)
@@ -709,7 +718,7 @@ type Transaction struct {
 	From           ObjectId   `json:"from"`
 	To             ObjectId   `json:"to"`
 	AmountData     Amount     `json:"amount"`
-	MemoData       *Memo      `json:"memo,omitempty"`
+	MemoData       *OpMemo    `json:"memo,omitempty"`
 	ExtensionsData Extensions `json:"extensions"`
 }
 type Operation []interface{}
