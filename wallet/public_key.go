@@ -1,11 +1,10 @@
 package wallet
 
 import (
-	"crypto/sha256"
-	"math/big"
-
 	"CocosSDK/crypto/base58-go"
 	"CocosSDK/crypto/secp256k1"
+	"crypto/sha256"
+	"math/big"
 
 	"golang.org/x/crypto/ripemd160"
 )
@@ -23,7 +22,7 @@ func (puk PublicKey) GetSha256Address() []byte {
 }
 
 func (puk PublicKey) UnCompressed() PublicKey {
-	x, y := secp256k1.DecompressPubkey(puk)
+	x, y := puk.GetPoint()
 	pubkey := append([]byte{4},
 		append(x.Bytes(),
 			y.Bytes()...)...)
@@ -31,7 +30,8 @@ func (puk PublicKey) UnCompressed() PublicKey {
 }
 
 func (puk PublicKey) GetPoint() (x, y *big.Int) {
-	x, y = secp256k1.DecompressPubkey(puk)
+	xy := secp256k1.GetXY(puk)
+	x, y = xy.X.GetBig(), xy.Y.GetBig()
 	return
 }
 func (puk PublicKey) ToBase58String() string {

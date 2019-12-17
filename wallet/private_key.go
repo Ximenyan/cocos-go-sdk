@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
 	"math/big"
 	"math/rand"
 	"time"
@@ -125,22 +124,16 @@ func (prk PrivateKey) GetPublicKey() PublicKey {
 	priv.PublicKey.Curve = c
 	priv.D = ret
 	priv.PublicKey.X, priv.PublicKey.Y = c.ScalarBaseMult(ret.Bytes())
-	pubkey := secp256k1.CompressPubkey(priv.X, priv.Y)
+	pubkey := secp256k1.PubkeyFromSeckey(prk.GetSeckey())
 	return pubkey
 }
 
 func (prk PrivateKey) Sign(data []byte) string {
-	var nData int
-	nData = 0
 	for {
-		sign, err := secp256k1.Sign(data, prk.GetSeckey(), nData)
-		if err != nil {
-			log.Panic("secp256k1 sign error!!!")
-		}
-		if is_valid(sign) && secp256k1.VerifySignature(prk.GetPublicKey(), data, sign[0:64]) {
+		sign := secp256k1.Sign(data, prk.GetSeckey())
+		if is_valid(sign) && secp256k1.VerifySignature(data, sign, prk.GetPublicKey()) {
 			return hex.EncodeToString(append([]byte{0x1f + sign[64]}, sign[0:64]...))
 		}
-		nData += 1
 	}
 
 }
@@ -150,7 +143,7 @@ func VerifySignature(data, signature, puk string) bool {
 		data_digest := sha256digest(data_bytes)
 		if sign, err := hex.DecodeString(signature); err == nil {
 			if key := PukFromBase58String(puk); key != nil {
-				if is_valid(sign[1:]) && secp256k1.VerifySignature(key, data_digest, sign[1:65]) {
+				if is_valid(sign[1:]) && secp256k1.VerifySignature(data_digest, sign, key) {
 					return true
 				}
 			}

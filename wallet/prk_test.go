@@ -2,7 +2,7 @@ package wallet
 
 import (
 	"CocosSDK/crypto/secp256k1"
-	"CocosSDK/rpc"
+	//	"CocosSDK/rpc"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
@@ -12,16 +12,14 @@ import (
 	"testing"
 )
 
-const TEST_NET = "47.93.62.96"
-const LOCAL = "192.168.0.166"
+//const TEST_NET = "47.93.62.96"
+//const LOCAL = "192.168.0.166"
 
-var _ = rpc.InitClient(TEST_NET, 8049, false)
+//var _ = rpc.InitClient(TEST_NET, 8049, false)
 
 func TestMemo(t *testing.T) {
-	prk := PrkFromBase58String("5HqGVLJ2zN5tJw7JNKsc8e25Gadn5GYiwkEde3XrhUN3D1pZx2P")
-
-	puk := PukFromBase58String("COCOS6qF5SzyYRcnEiHjF3zF143LSyyvGRcs1tYMc5iBTvWJGHhb39V")
-	EncodeMemo()
+	puk := PukFromBase58String("COCOS7X5HPYLUicec1HLK9LxWWyZhAEx2RxgNWKPuK3MZ9GQDfrRUe3")
+	t.Log(hex.EncodeToString(puk))
 }
 
 func TestPrk(t *testing.T) {
@@ -31,6 +29,7 @@ func TestPrk(t *testing.T) {
 	prk := PrkFromBase58String("5HqGVLJ2zN5tJw7JNKsc8e25Gadn5GYiwkEde3XrhUN3D1pZx2P")
 
 	puk := PukFromBase58String("COCOS6qF5SzyYRcnEiHjF3zF143LSyyvGRcs1tYMc5iBTvWJGHhb39V")
+	puk.UnCompressed()
 	x, y := puk.GetPoint()
 	cure := secp256k1.S256()
 	x, y = cure.ScalarMult(x, y, prk.PrivKey)

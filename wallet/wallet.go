@@ -6,6 +6,7 @@ import (
 	. "CocosSDK/type"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -69,6 +70,7 @@ func (w *Wallet) AddAccountByPrivateKey(prkWif string, password string) (err err
 	encryptWif, _ := EncryptKey(prkWif, []byte(password))
 	puk := prk.GetPublicKey().ToBase58String()
 	info := rpc.GetAccountInfoByPublicKey(puk)
+	fmt.Println(info)
 	if info == nil {
 		return errors.New("the key is not find!")
 	}

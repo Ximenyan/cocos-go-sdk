@@ -2,21 +2,21 @@ package CocosSDK
 
 import (
 	//"encoding/json"
-	//"CocosSDK/wallet"
 	//"CocosSDK/type"
 	//"CocosSDK/rpc"
 	"testing"
 )
 
 func TestInitSdk2(t *testing.T) {
-	InitSDK("test.cocosbcx.net", false, 80)
+	InitSDK("test.cocosbcx.net", true)
+
 }
 
 func TestWallet(t *testing.T) {
 	//导入账户
 	Wallet.ImportAccount("ggggxxx", "12345678")
 	//设置默认账户
-	Wallet.SetDefaultAccount("ggggxxx", "12345678")
+	t.Log(Wallet.SetDefaultAccount("ggggxxx", "12345678"))
 }
 
 func TestTransfer(t *testing.T) {
