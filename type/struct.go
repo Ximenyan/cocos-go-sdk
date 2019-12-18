@@ -29,11 +29,14 @@ func (i *BigInt) UnmarshalJSON(data []byte) error {
 	if data[0] == '"' {
 		data = data[1 : len(data)-1]
 	}
-	big := new(big.Int)
-	if err := json.Unmarshal(data, big); err != nil {
+	b := new(big.Int)
+	if err := json.Unmarshal(data, b); err != nil {
 		return err
 	}
-	i.SetBytes(big.Bytes())
+	i.SetBytes(b.Bytes())
+	if data[0] == '-' {
+		i.Neg(&(i.Int))
+	}
 	return nil
 }
 
