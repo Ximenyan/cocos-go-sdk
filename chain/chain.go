@@ -2,6 +2,7 @@ package chain // import "CocosSDK/chain"
 
 import (
 	"CocosSDK/rpc"
+	"CocosSDK/type"
 	"log"
 )
 
@@ -62,27 +63,31 @@ func Database() error {
 	req := rpc.CreateRpcRequest(rpc.CALL,
 		[]interface{}{1, `database`,
 			[]interface{}{}})
-	if _, err := rpc.Client.Send(req); err != nil {
+	if res, err := rpc.Client.Send(req); err == nil {
+		return res.GetInterface(&types.DATABASE_API_ID)
+	} else {
 		return err
 	}
-	return nil
 }
 
 func History() error {
 	req := rpc.CreateRpcRequest(rpc.CALL,
 		[]interface{}{1, `history`,
 			[]interface{}{}})
-	if _, err := rpc.Client.Send(req); err != nil {
+	if res, err := rpc.Client.Send(req); err == nil {
+		return res.GetInterface(&types.HISTORY_API_ID)
+	} else {
 		return err
 	}
-	return nil
 }
 
 func Network_broadcast() error {
 	req := rpc.CreateRpcRequest(rpc.CALL,
 		[]interface{}{1, `network_broadcast`,
 			[]interface{}{}})
-	if _, err := rpc.Client.Send(req); err != nil {
+	if res, err := rpc.Client.Send(req); err == nil {
+		return res.GetInterface(&types.BROADCAST_API_ID)
+	} else {
 		return err
 	}
 	return nil
