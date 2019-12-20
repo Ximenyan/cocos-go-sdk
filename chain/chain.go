@@ -38,8 +38,15 @@ func GetChainProperties() *ChainProperties {
 }
 func InitChain() {
 	Login("", "")
-	Database()
-	History()
+	if Database() != nil {
+		log.Panic("init Database api id Error!!!")
+	}
+	if History() != nil {
+		log.Panic("init History api id Error!!!")
+	}
+	if Network_broadcast() != nil {
+		log.Panic("init Network broadcast api id Error!!!")
+	}
 	Network_broadcast()
 	Propertie := GetChainProperties()
 	if Propertie == nil {
