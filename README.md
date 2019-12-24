@@ -26,7 +26,7 @@ import (
 func main() {
     //初始化SDK 
     //节点host port 是否ssl
-	sdk.InitSDK("47.93.62.96", 8049, false)
+	sdk.InitSDK("47.93.62.96", false, 8049)
 }
 
 ```
@@ -52,7 +52,13 @@ func main() {
 参数：name     账户名
       password 账户密码
 ```
+#### 导入账户
 
+```
+方法：sdk.Wallet.ImportAccount(name , password) error
+参数：name   账户名
+      password 密码
+```
 #### 导入私钥
 
 ```
@@ -69,14 +75,14 @@ func main() {
 #### 创建账户
 
 ```
-方法：sdk.Wallet.CreateAccount(name , password) error
+方法：sdk.Wallet.CreateAccount(name , password) (string, error)
 参数：name   账户名
       password 密码
 ```
 #### 保存钱包
 
 ```
-方法：sdk.Wallet.SaveAs(path string) error
+方法：sdk.Wallet.SaveAs(path string) (string, error)
 参数：path   保存路径
 ```
 
@@ -85,13 +91,13 @@ func main() {
 #### 升级终身账户
 
 ```
-方法：sdk.Wallet.UpgradeAccount(name string) error
+方法：sdk.Wallet.UpgradeAccount(name string) (string, error)
 参数：name   账户名
 ```
 #### 注册NH开发者
 
 ```
-方法：sdk.Wallet.RegisterNhAssetCreator(name string) error
+方法：sdk.Wallet.RegisterNhAssetCreator(name string) (string, error)
 参数：name   账户名
 ```
 
@@ -99,7 +105,7 @@ func main() {
 
 #### 创建Token
 ```
-方法：sdk.CreateAsset(symbol string, max_supply, precision, uint64) error
+方法：sdk.CreateAsset(symbol string, max_supply, precision, uint64) (string, error)
 参数：
 	symbol   token简写
 	max_supplay 最大发行量
@@ -109,7 +115,7 @@ func main() {
 
 #### Token发行
 ```
-方法：sdk.IssueToken(symbol, issue_to_account string, amount float64) error
+方法：sdk.IssueToken(symbol, issue_to_account string, amount float64) (string, error)
 参数：
 	symbol              token简写
 	issue_to_account    接受Token的账户
@@ -117,39 +123,31 @@ func main() {
 ```
 #### Toke更新
 ```
-方法：sdk.UpdateToken(symbol string, max_supply, precision uint64) error 
+方法：sdk.UpdateToken(symbol string, max_supply uint64, new_issuer ...string) (string, error) 
 参数：
     new_issuer 新发行人
 	symbol   token简写
 	max_supplay 最大发行量
-	precision   精度
 	
 ```
 
 #### Token销毁
 ```
-方法：sdk.ReserveToken(symbol,  amount float64) error
+方法：sdk.ReserveToken(symbol,  amount float64) (string, error)
 参数：
 	symbol              token简写
 	amount	            销毁数量
 ```
-#### 注资手续费池
+#### 质押GAS
 ```
-方法：sdk.TokenFundFeePool(symbol string, amount float64) error
+方法：sdk.Pledgegas(beneficiary string, collateral float64) (string, error)
 参数：
-	symbol              token简写
-	amount	            注资金额
-```
-#### 领取累计的手续费
-```
-方法：sdk.ClaimFees(symbol string, value float64) error
-参数：
-	symbol              token简写
-	value	            提取数量
+	beneficiary             受益人
+	collateral	            质押数量
 ```
 #### Token转账
 ```
-方法：sdk.Wallet.Transfer(to, symbol, memo string, value float64) error
+方法：sdk.Wallet.Transfer(to, symbol, memo string, value float64) (tx_hash string, err error)
 参数：
 参数：
 	symbol              token简写
@@ -157,41 +155,41 @@ func main() {
 	value	            发行数量
 	memo		    备注
 ```
-#### 创建Vesting Balance
+#### 投票
 ```
-方法：sdk.CreateVestingBalance(symbol string, amount float64) error
+方法：sdk.Vote(id string, value float64) (tx_hash string, err error)
 参数：
-	symbol              token简写
-	amount	            质押数量
+        id                  备选人ID
+	    value	            投票数量
 ```
-#### 领取Vesting奖励
+#### 领取解冻的资产
 ```
-方法：sdk.WithdrawVestingBalance(balance_id string) error
+方法：sdk.WithdrawVestingBalance(balance_id string) (string, error)
 参数：
 	balance_id              Vesting Balance Id
 ```
 
 #### 创建世界观
 ```
-方法：sdk.CreateWorldView(name string) error 
+方法：sdk.CreateWorldView(name string) (string, error) 
 参数：
 	name              世界观名称
 ```
 #### 提议关联世界观
 ```
-方法：sdk.RelateWorldView(world_view string) error
+方法：sdk.RelateWorldView(world_view string) (string, error)
 参数：
 	world_view              世界观名称
 ```
 #### 批准关联世界观的提议
 ```
-方法：sdk.ApprovalsProposal(proposal_id string) error
+方法：sdk.ApprovalsProposal(proposal_id string) (string, error)
 参数：
 	proposal_id              提议的ID
 ```
 #### 创建NH资产
 ```
-方法：sdk.CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) error
+方法：sdk.CreateNhAsset(asset_symbol, world_view, owner_name, base_describe string) (string, error)
 参数：
 参数：
 	asset_symbol        当前NH资产交易时，使用的资产符号
@@ -202,7 +200,7 @@ func main() {
 
 #### NH资产转账
 ```
-方法：sdk.TransferNhAsset(to_name, asset_id string) error
+方法：sdk.TransferNhAsset(to_name, asset_id string) (string, error)
 参数：
 参数：
 	to_name               接收账户
@@ -211,7 +209,7 @@ func main() {
 
 #### NH资产删除
 ```
-方法：sdk.DeleteNhAsset(asset_id string) error
+方法：sdk.DeleteNhAsset(asset_id string) (string, error)
 参数：
 参数：
 	asset_id              NH资产ID
@@ -220,7 +218,7 @@ func main() {
 #### 创建卖出NH资产订单
 
 ```
-方法：sdk.SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price_asset string, pending_order_fee_amount, price_amount uint64) error 
+方法：sdk.SellNhAsset(otcaccount_name, asset_id, memo, pending_order_fee_asset, price_asset string, pending_order_fee_amount, price_amount uint64) (string, error) 
 参数：
 参数：
 	otcaccount_name：OTC交易平台账户，用于收取挂单费用
@@ -235,7 +233,7 @@ func main() {
 #### 撤销NH资产卖出单
 
 ```
-方法：sdk.CancelNhAssetOrder(order_id string) error 
+方法：sdk.CancelNhAssetOrder(order_id string) (string, error) 
 参数：
 参数：
 	order_id  ：订单ID
@@ -244,7 +242,7 @@ func main() {
 #### 吃单，买入NH资产
 
 ```
-方法：FillNhAsset(order_id string) error
+方法：FillNhAsset(order_id string) (string, error)
 参数：
 参数：
 	order_id  ：订单ID
@@ -256,7 +254,7 @@ func main() {
 #### 创建合约1
 
 ```
-方法：sdk.CreateContractByFile(c_name, c_auth, path string) error
+方法：sdk.CreateContractByFile(c_name, c_auth, path string) (string, error)
 参数：
 参数：
 	c_name  ：合约名
@@ -266,7 +264,7 @@ func main() {
 #### 创建合约2
 
 ```
-方法：sdk.CreateContract(c_name, c_auth, data string) error
+方法：sdk.CreateContract(c_name, c_auth, data string) (string, error)
 参数：
 参数：
 	c_name  ：合约名
@@ -277,7 +275,7 @@ func main() {
 #### 更新合约1
 
 ```
-方法：sdk.ReviseContractByFile(c_name, path string) error
+方法：sdk.ReviseContractByFile(c_name, path string) (string, error)
 参数：
 参数：
 	c_name  ：合约名
@@ -286,7 +284,7 @@ func main() {
 #### 更新合约2
 
 ```
-方法：sdk.ReviseContract(c_name, data string) error
+方法：sdk.ReviseContract(c_name, data string) (string, error)
 参数：
 参数：
 	c_name  ：合约名
@@ -295,7 +293,7 @@ func main() {
 #### 合约调用
 
 ```
-方法：sdk.InvokeContract(contract_name, func_name string, args ...interface{})
+方法：sdk.InvokeContract(contract_name, func_name string, args ...interface{}) (string, error)
 参数：
 参数：
 	contract_name ： 合约名
@@ -408,4 +406,3 @@ func main() {
 方法： sdk.GetMarketHistory(asset_id, _asset_id, start, end string, limit uint64) []interface{}
 ```
 
->>>>>>> cocos-go-sdk

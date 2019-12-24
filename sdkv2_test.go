@@ -36,7 +36,7 @@ func TestTransfer(t *testing.T) {
 	//IssueToken("C4C4S", "gggg2", 1000)
 	//ReserveToken("C4C4S", 1)
 	//Wallet.RegisterNhAssetCreator("gggg2")
-	//UpdateToken("C5C5S", 10000000, 7)
+	UpdateToken("C5C5S", 10000000, 7)
 	//CreateWorldView("BCX")
 	//CreateNhAsset("COCOS", "BCX", "gggg1", `{"name":"乾坤大挪移"}`)
 	//SellNhAsset("ximenyan1111", "4.2.1", "便宜货...", COCOS_ID, COCOS_ID, 5, 100)

@@ -177,13 +177,12 @@ const (
 )
 
 /*更新 token*/
-func UpdateToken(symbol string, max_supply, precision uint64, new_issuer ...string) (string, error) {
-
+func UpdateToken(symbol string, max_supply uint64, new_issuer ...string) (string, error) {
 	update_asset_info := rpc.GetTokenInfoBySymbol(symbol)
 	if Wallet.Default.Info == nil {
 		Wallet.Default.Info = rpc.GetAccountInfoByName(Wallet.Default.Name)
 	}
-	precision = uint64(math.Pow10(int(precision)))
+	precision := uint64(math.Pow10(update_asset_info.Precision))
 	cm_op := CommonOptions{
 		MaxSupply:         max_supply * precision,
 		MarketFeePercent:  0,
