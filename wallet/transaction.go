@@ -2,21 +2,21 @@ package wallet
 
 import (
 	"CocosSDK/chain"
+	"CocosSDK/common"
+	"CocosSDK/crypto/secp256k1"
+	"CocosSDK/rpc"
+	. "CocosSDK/type"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
 	"time"
-
-	"CocosSDK/common"
-	"CocosSDK/crypto/secp256k1"
-	"CocosSDK/rpc"
-	. "CocosSDK/type"
 )
 
 func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, value float64, memo string, encode bool) *Transaction {
@@ -47,7 +47,12 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 	}
 	return t
 }
-
+func PKCS7UnPadding(origData []byte) []byte {
+	length := len(origData)
+	unpadding := int(origData[length-1])
+	fmt.Println(length,unpadding)
+	return origData[:(length - unpadding)]
+}
 func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg string, err error) {
 	msg_byte_s, err := hex.DecodeString(msg)
 	puk := PukFromBase58String(from)
@@ -73,8 +78,9 @@ func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg str
 	}
 	block, _ := aes.NewCipher(seed_digest[0:32])
 	bm := cipher.NewCBCDecrypter(block, seed_digest[32:48])
-	bm.CryptBlocks(msg_byte_s, msg_byte_s)
-	decode_msg = string(msg_byte_s[4:])
+	byte_s_s := make([]byte,len(msg_byte_s))
+	bm.CryptBlocks(byte_s_s, msg_byte_s)
+	decode_msg = string(PKCS7UnPadding(byte_s_s[4:]))
 	return
 }
 

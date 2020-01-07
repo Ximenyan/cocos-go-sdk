@@ -1,14 +1,7 @@
 package wallet
 
 import (
-	"CocosSDK/crypto/secp256k1"
-	//	"CocosSDK/rpc"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/sha256"
-	"crypto/sha512"
 	"encoding/hex"
-	"strconv"
 	"testing"
 )
 
@@ -25,9 +18,13 @@ func TestMemo(t *testing.T) {
 func TestPrk(t *testing.T) {
 	//elliptic.Curve
 	//elliptic.TestOnCurve()
-	message := "ximenyan1111"
+	//message := "ximenyan1111"
 	prk := PrkFromBase58String("5HqGVLJ2zN5tJw7JNKsc8e25Gadn5GYiwkEde3XrhUN3D1pZx2P")
-
+	puk_str := prk.GetPublicKey().ToBase58String()
+	m := EncodeMemo(&prk,puk_str,puk_str,`{"name":"令狐冲","sex":"1"}`)
+	t.Log(DecodeMemo(&prk,puk_str,m.Message,m.Nonce))
+	return
+	/*
 	puk := PukFromBase58String("COCOS6qF5SzyYRcnEiHjF3zF143LSyyvGRcs1tYMc5iBTvWJGHhb39V")
 	puk.UnCompressed()
 	x, y := puk.GetPoint()
@@ -56,5 +53,5 @@ func TestPrk(t *testing.T) {
 	block, _ := aes.NewCipher(seed_digest[0:32])
 	m := cipher.NewCBCEncrypter(block, seed_digest[32:48])
 	m.CryptBlocks(byte_s_msg, byte_s_msg)
-	t.Log(hex.EncodeToString(byte_s_msg))
+	t.Log(hex.EncodeToString(byte_s_msg))*/
 }

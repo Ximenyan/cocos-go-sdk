@@ -103,7 +103,7 @@ var _ent EntropyPool
 func init() {
 	var seed1 []byte = []byte(strconv.FormatUint(uint64(time.Now().UnixNano()), 16))
 	var seed2 []byte = []byte(strings.Join(os.Environ(), ""))
-	var seed3 []byte = []byte(strconv.FormatUint(uint64(os.Getpid()), 16))
+	var seed3 []byte = []byte(strconv.FormatUint(uint64(time.Now().Unix()), 16))
 
 	seed4 := make([]byte, 256)
 	io.ReadFull(crand.Reader, seed4) //system secure random number generator
