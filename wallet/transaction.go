@@ -50,7 +50,7 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 func PKCS7UnPadding(origData []byte) []byte {
 	length := len(origData)
 	unpadding := int(origData[length-1])
-	fmt.Println(length,unpadding)
+	//fmt.Println(length,unpadding)
 	return origData[:(length - unpadding)]
 }
 func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg string, err error) {
