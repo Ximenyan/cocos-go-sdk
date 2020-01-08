@@ -122,7 +122,7 @@ func EncodeMemo(prk *PrivateKey, from, to, msg string) *Memo {
 type Signed_Transaction struct {
 	RefBlockNum    uint64      `json:"ref_block_num"`
 	RefBlockPrefix uint64      `json:"ref_block_prefix"`
-	Expiration     string      `json:"expiration"`
+	Expiration     Expiration   `json:"expiration"`
 	Operations     []Operation `json:"operations"`
 	ExtensionsData Extensions  `json:"extensions"`
 	Signatures     []string    `json:"signatures"`
@@ -131,8 +131,7 @@ type Signed_Transaction struct {
 func (o Signed_Transaction) GetBytes() []byte {
 	block_num_data := common.VarUint(o.RefBlockNum, 16)
 	block_prefix_data := common.VarUint(o.RefBlockPrefix, 32)
-	t, _ := time.Parse(TIME_FORMAT, o.Expiration)
-	expiration_data := common.VarUint(uint64(t.Unix()), 32)
+	expiration_data := o.Expiration.GetBytes()
 	operations_data := common.Varint(uint64(len(o.Operations)))
 	for _, op := range o.Operations {
 		operations_data = append(operations_data, op.GetBytes()...)
@@ -154,7 +153,7 @@ func CreateSignTransaction(opID int, t Object, prk ...*PrivateKey) (st *Signed_T
 	st = &Signed_Transaction{
 		RefBlockNum:    dgp.Get_ref_block_num(),
 		RefBlockPrefix: dgp.Get_ref_block_prefix(),
-		Expiration:     time.Now().Format(TIME_FORMAT),
+		Expiration:   GetExpiration(),
 		Operations:     []Operation{op},
 		ExtensionsData: []interface{}{},
 		Signatures:     []string{},
