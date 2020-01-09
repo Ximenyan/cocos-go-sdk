@@ -12,7 +12,6 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
