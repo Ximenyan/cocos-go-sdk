@@ -50,6 +50,11 @@ func EmptyFee() Fee {
 	return A
 }
 
+func ToExpiration(expiration string) Expiration {
+	t, _ := time.Parse(TIME_FORMAT, string(expiration))
+	return Expiration( time.Unix(t.Unix()+30,0).In(UTCZone).Format(TIME_FORMAT))
+}
+
 func GetExpiration() Expiration {
 	return Expiration(time.Now().In(UTCZone).Format(TIME_FORMAT))
 }

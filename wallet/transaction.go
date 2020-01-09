@@ -152,7 +152,7 @@ func CreateSignTransaction(opID int, t Object, prk ...*PrivateKey) (st *Signed_T
 	st = &Signed_Transaction{
 		RefBlockNum:    dgp.Get_ref_block_num(),
 		RefBlockPrefix: dgp.Get_ref_block_prefix(),
-		Expiration:   	Expiration(dgp.Time),
+		Expiration:   	ToExpiration(dgp.Time),
 		Operations:     []Operation{op},
 		ExtensionsData: []interface{}{},
 		Signatures:     []string{},
