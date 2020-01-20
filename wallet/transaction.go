@@ -49,11 +49,25 @@ func CreateTransaction(prk *PrivateKey, from_name, to_name, tk_symbol string, va
 func PKCS7UnPadding(origData []byte) []byte {
 	length := len(origData)
 	unpadding := int(origData[length-1])
-	//fmt.Println(length,unpadding)
+	for i := 0;i < unpadding; i++{
+		if int(origData[length-i-1]) != unpadding{
+			return origData
+		}
+	}
 	return origData[:(length - unpadding)]
 }
+
 func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg string, err error) {
+	defer func() {
+		if recover() != nil{
+			decode_msg = ""
+			err = errors.New("Decode Memo error!")
+		}
+	}()
 	msg_byte_s, err := hex.DecodeString(msg)
+	if err != nil{
+		return decode_msg, err
+	}
 	puk := PukFromBase58String(from)
 	x, y := puk.GetPoint()
 	cure := secp256k1.S256()
@@ -67,14 +81,14 @@ func DecodeMemo(prk *PrivateKey, from, msg string, nonce uint64) (decode_msg str
 	sha.Reset()
 	sha.Write([]byte(seed))
 	seed_digest := sha.Sum(nil)
-	s256 := sha256.New()
-	s256.Write([]byte(msg))
-	checksum := s256.Sum(nil)
-	byte_s_msg := append(checksum[0:4], []byte(msg)...)
-	num := 16 - len(byte_s_msg)%16
-	for i := 0; i < num && num != 16; i++ {
-		byte_s_msg = append(byte_s_msg, byte(num))
-	}
+	//s256 := sha256.New()
+	//s256.Write([]byte(msg))
+	//checksum := s256.Sum(nil)
+	//byte_s_msg := append(checksum[0:4], []byte(msg)...)
+	//num := 16 - len(byte_s_msg)%16
+	//for i := 0; i < num && num != 16; i++ {
+	//	byte_s_msg = append(byte_s_msg, byte(num))
+	//}
 	block, _ := aes.NewCipher(seed_digest[0:32])
 	bm := cipher.NewCBCDecrypter(block, seed_digest[32:48])
 	byte_s_s := make([]byte,len(msg_byte_s))
