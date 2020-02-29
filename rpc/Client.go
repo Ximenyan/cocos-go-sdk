@@ -119,9 +119,12 @@ func (c *RpcClient) handler() {
 			}
 		} else {
 			for err != nil {
-				c.ws, err = websocket.Dial(c.ws.Config().Origin.String(), " ", c.ws.Config().Origin.String())
+				var ws *websocket.Conn
+				ws, err = websocket.Dial(c.ws.Config().Origin.String(), " ", c.ws.Config().Origin.String())
 				if err != nil {
 					time.Sleep(Reconnect * time.Second)
+				}else{
+					c.ws = ws
 				}
 			}
 		}

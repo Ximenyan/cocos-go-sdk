@@ -45,6 +45,14 @@ type Table struct {
 	Array []interface{}
 }
 
+func (o *Table) MarshalJSON() ([]byte, error) {
+	if len(o.Dict) > 0{
+		return json.Marshal(o.Dict)
+	}else{
+		return json.Marshal(o.Array)
+	}
+}
+
 func (o *LuaObject) GetTable() *Table {
 	if o.Type != TABLE {
 		return nil
@@ -178,8 +186,7 @@ func CreateLuaObject(v interface{}) *LuaObject {
 	var t uint64
 	type_str := reflect.TypeOf(v).Name()
 	if strings.Index(type_str, "int") == 0 {
-		t = 2
-		v = strconv.Itoa(v.(int))
+		t = 0
 	} else if strings.Index(type_str, "uint") == 0 {
 		t = 0
 	} else if strings.Index(type_str, "float") == 0 {
