@@ -26,3 +26,17 @@ func GetContract(contract_name string) *Contract {
 	}
 	return nil
 }
+
+func GetAccountContractData(account_id,contract_id string) *Contract {
+	contract := new(Contract)
+	req := CreateRpcRequest(CALL,
+		[]interface{}{0, `get_account_contract_data`,
+			[]interface{}{account_id,contract_id}})
+	if resp, err := Client.Send(req); err == nil {
+		if err = resp.GetInterface(contract); err == nil {
+			return contract
+		}
+		return nil
+	}
+	return nil
+}
