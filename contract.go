@@ -79,3 +79,16 @@ func InvokeContract(contract_name, func_name string, args ...interface{}) (strin
 func GetContract(contract_name string) *rpc.Contract {
 	return rpc.GetContract(contract_name)
 }
+
+/*查询AccountContract data by name*/
+func GetAccountContractData(acct_name,contract_name string) *rpc.Contract {
+	acct := rpc.GetAccountInfoByName(acct_name)
+	contract := rpc.GetContract(contract_name)
+	return rpc.GetAccountContractData(acct.ID,contract.ID)
+}
+
+
+/*查询AccountContract data by id*/
+func GetAccountContractDataById(acct_id, contract_id string) *rpc.Contract {
+	return rpc.GetAccountContractData(acct_id,contract_id)
+}
